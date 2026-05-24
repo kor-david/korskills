@@ -365,7 +365,7 @@
       <span class="tag" id="tag-diff" style="display:none;"></span>
     </div>
     <div id="stimulus-context" class="stimulus-context" style="display:none;"></div>
-    <div class="stimulus-label">Client Fragment</div>
+    <div class="stimulus-label" id="stimulus-label">Client Fragment</div>
     <div class="stimulus-text" id="stimulus-text"></div>
     <div id="l1-input">
       <div class="question-text">What is the primary emotion being expressed?</div>
@@ -645,8 +645,16 @@ function fetchStimuli() {
     S.gateThreshold = d.gate_threshold || '8/10';
     S.pack = d.pack || null;
     if (!d.stimuli || !d.stimuli.length) throw new Error('No stimuli returned.');
+    // For L3b, only use stimuli with activity_type containing Repair
+    var baseStimuli = d.stimuli;
+    if (S.level === '3b') {
+      baseStimuli = d.stimuli.filter(function(s) {
+        return Array.isArray(s.activity_type) ? s.activity_type.indexOf('Repair') !== -1 : s.activity_type === 'Repair';
+      });
+      if (!baseStimuli.length) baseStimuli = d.stimuli; // fallback
+    }
     // Apply difficulty filter
-    var filtered = applyDiffFilter(d.stimuli);
+    var filtered = applyDiffFilter(baseStimuli);
     if (!filtered.length) {
       filtered = d.stimuli; // fallback to all if filter yields nothing
       setDiff('all');
@@ -700,23 +708,31 @@ function renderStim(s) {
 
   var stimTextEl = document.getElementById('stimulus-text');
 
-  // Repair drill -- correct order: setup (context) -> therapist miss -> client disaffiliation -> response box
-  // stimulus_text is not shown separately for L3b; miss block replaces it
+  // Update stimulus label
+  var stimLabel = document.getElementById('stimulus-label');
+  if (stimLabel) stimLabel.textContent = S.level === '3b' ? 'Client' : 'Client Fragment';
+
+  // Repair drill -- correct order: Client fragment -> Therapist miss -> Client disaffiliation -> response box
   var repairMissEl = document.getElementById('repair-miss-block');
   if (S.level === '3b' && s.therapist_miss_text) {
-    stimTextEl.style.display = 'none';
+    // Show stimulus_text as the client fragment (labelled)
+    stimTextEl.textContent = s.stimulus_text || '(no text)';
+    stimTextEl.style.display = 'block';
     if (!repairMissEl) {
       var missBlock = document.createElement('div');
       missBlock.id = 'repair-miss-block';
       missBlock.innerHTML = '<div class="repair-section-label">Therapist response (the miss)</div>'
         + '<div class="therapist-miss-text" id="therapist-miss-text"></div>'
-        + '<div class="repair-section-label">Client response</div>'
+        + '<div class="repair-section-label">Client</div>'
         + '<div class="client-disaffiliation-text" id="client-disaffiliation-text"></div>';
-      stimTextEl.parentNode.insertBefore(missBlock, stimTextEl);
+      stimTextEl.parentNode.insertBefore(missBlock, stimTextEl.nextSibling);
     }
     document.getElementById('therapist-miss-text').textContent = s.therapist_miss_text;
     document.getElementById('client-disaffiliation-text').textContent = s.client_disaffiliation_text || '';
     document.getElementById('repair-miss-block').style.display = 'block';
+    // Relabel the stimulus context label to "Client"
+    var ctxEl = document.getElementById('stimulus-context');
+    if (ctxEl && ctxEl.style.display !== 'none') ctxEl.dataset.repair = '1';
   } else {
     stimTextEl.textContent = s.stimulus_text || '(no text)';
     stimTextEl.style.display = 'block';
