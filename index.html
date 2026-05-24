@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KorSkills &mdash; Drill Practice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Text:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #fef9f6;
+      --surface: rgba(255,255,255,0.75);
+      --card-bg: rgba(242,238,234,0.92);
+      --border: rgba(184,149,106,0.22);
+      --border-light: rgba(184,149,106,0.12);
+      --accent: #b8956a;
+      --accent-btn: linear-gradient(135deg,#e5cdc2,#dcc1b4);
+      --accent2: #8fc9a6;
+      --accent2-dark: #5a7070;
+      --danger: #c47070;
+      --text: #5a4a3a;
+      --muted: #9b8b7b;
+      --radius: 16px;
+      --shadow-card: 0 8px 32px rgba(184,149,106,0.12);
+      --shadow-hover: 0 6px 16px rgba(184,149,106,0.15);
+    }
+    body { background: linear-gradient(135deg,#fef9f6 0%,#faf5f1 50%,#f5eff8 100%); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 400; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem 3rem; }
+    /* Login screen */
+    #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg,#fef9f6 0%,#faf5f1 50%,#f5eff8 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+    #login-screen.hidden { display: none; }
+    .login-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 22px; padding: 2.4rem 2.2rem; width: 100%; max-width: 400px; box-shadow: var(--shadow-card); text-align: center; }
+    .login-logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; letter-spacing: 0.02em; color: #6b5543; margin-bottom: 0.3rem; }
+    .login-logo span { color: var(--muted); font-weight: 400; }
+    .login-subtitle { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+    .login-label { display: block; font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem; text-align: left; }
+    .login-input { width: 100%; background: rgba(255,255,255,0.7); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; padding: 0.7rem 0.9rem; outline: none; transition: border-color 0.2s; margin-bottom: 0.5rem; text-align: center; letter-spacing: 0.05em; }
+    .login-input:focus { border-color: var(--accent); }
+    .login-error { font-size: 0.82rem; color: var(--danger); min-height: 1.2rem; margin-bottom: 0.8rem; }
+    .login-btn { width: 100%; background: var(--accent-btn); color: var(--text); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; padding: 0.85rem; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; box-shadow: 0 4px 12px rgba(201,164,152,0.12); }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .login-welcome { font-size: 0.82rem; color: var(--muted); margin-top: 1.2rem; }
+    /* User badge in header */
+    #user-badge { font-size: 0.8rem; color: var(--muted); cursor: pointer; padding: 0.3rem 0.7rem; border-radius: 20px; border: 1px solid var(--border-light); background: rgba(255,255,255,0.5); transition: background 0.2s; }
+    #user-badge:hover { background: rgba(255,255,255,0.8); }
+    header { width: 100%; max-width: 680px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.3rem; letter-spacing: 0.02em; color: #6b5543; }
+    .logo span { color: var(--muted); font-weight: 400; }
+    #config-panel { width: 100%; max-width: 680px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem 1.4rem; margin-bottom: 0.9rem; box-shadow: var(--shadow-card); }
+    #config-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: #6b5543; margin-bottom: 1rem; }
+    #config-panel.collapsed { padding: 0.7rem 1.4rem; box-shadow: none; }
+    #config-panel.collapsed #config-fields { display: none; }
+    #config-summary { display: none; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
+    #config-summary:hover { color: var(--text); }
+    #config-panel.collapsed #config-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .fields-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .fields-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    label { display: block; font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
+    input, select { width: 100%; background: rgba(255,255,255,0.7); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 0.55rem 0.75rem; outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus { border-color: var(--accent); }
+    select option { background: #fef9f6; color: var(--text); }
+    #l2-config { display: none; margin-bottom: 0; }
+    #l2-config.visible { display: block; }
+    .toggle-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.8rem; cursor: pointer; font-size: 0.85rem; color: var(--muted); user-select: none; }
+    .toggle-row input[type="checkbox"] { width: auto; accent-color: var(--accent); cursor: pointer; }
+    #difficulty-filter-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.8rem; flex-wrap: wrap; }
+    #difficulty-filter-row span { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-right: 0.2rem; }
+    .diff-btn { background: rgba(255,255,255,0.6); border: 1px solid var(--border); border-radius: 20px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500; padding: 0.3rem 0.75rem; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
+    .diff-btn:hover { border-color: var(--accent); box-shadow: var(--shadow-hover); }
+    .diff-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(184,149,106,0.08); }
+    .btn { font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; padding: 0.75rem 1.6rem; border-radius: 12px; border: none; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; letter-spacing: 0.02em; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary { background: var(--accent-btn); color: var(--text); box-shadow: 0 4px 12px rgba(201,164,152,0.12); }
+    .btn-ghost { background: rgba(255,255,255,0.6); border: 1px solid var(--border); color: var(--text); }
+    .btn-sm { font-size: 0.78rem; padding: 0.5rem 1rem; border-radius: 10px; }
+    #drill-area { width: 100%; max-width: 680px; }
+    .drill-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 22px; padding: 1.6rem 1.8rem; margin-bottom: 0.9rem; box-shadow: var(--shadow-card); animation: fadeUp 0.3s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .drill-meta { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+    .tag { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.09em; padding: 0.4rem 0.9rem; border-radius: 20px; border: 1px solid; background: rgba(168,213,186,0.12); color: var(--accent2-dark); border-color: rgba(168,213,186,0.3); }
+    .tag-level { background: rgba(168,213,186,0.12); color: var(--accent2-dark); border-color: rgba(168,213,186,0.3); }
+    .tag-skill { background: rgba(168,213,186,0.12); color: var(--accent2-dark); border-color: rgba(168,213,186,0.3); }
+    .tag-diff-easy { background: rgba(143,201,166,0.12); color: #4a7a5a; border-color: rgba(143,201,166,0.3); }
+    .tag-diff-medium { background: rgba(184,149,106,0.1); color: var(--accent); border-color: rgba(184,149,106,0.25); }
+    .tag-diff-hard { background: rgba(196,112,112,0.08); color: var(--danger); border-color: rgba(196,112,112,0.25); }
+    .stimulus-context { font-size: 0.82rem; color: var(--muted); font-style: italic; margin-bottom: 0.8rem; line-height: 1.6; padding-left: 0.75rem; border-left: 2px solid var(--border); }
+    .stimulus-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.7rem; }
+    .stimulus-text { background: linear-gradient(135deg,rgba(250,246,242,0.7) 0%,rgba(253,251,249,0.85) 100%); border-radius: 14px; padding: 1.2rem 1.3rem; font-size: 0.92rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; margin-bottom: 1.4rem; font-style: italic; box-shadow: inset 0 3px 8px rgba(0,0,0,0.08), inset 0 -1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.03); }
+    .repair-section-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; margin-top: 0.8rem; }
+    .therapist-miss-text { background: rgba(184,149,106,0.07); border-radius: 14px; padding: 0.9rem 1.1rem; font-size: 0.92rem; line-height: 1.7; color: var(--text); white-space: pre-wrap; margin-bottom: 0.5rem; font-style: italic; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); border: 1px solid rgba(184,149,106,0.15); }
+    .client-disaffiliation-text { background: rgba(255,255,255,0.5); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 1rem; font-size: 0.88rem; line-height: 1.6; color: var(--muted); margin-bottom: 1rem; }
+    .question-text { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+    .emotion-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-bottom: 1.5rem; }
+    .emotion-grid-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.6rem; }
+    .emotion-btn { background: rgba(255,255,255,0.75); border: 1.5px solid rgba(184,149,106,0.3); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 400; padding: 0.7rem 0.5rem; cursor: pointer; text-align: center; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; }
+    .emotion-btn:hover { background: rgba(255,255,255,0.9); border-color: rgba(184,149,106,0.5); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+    .emotion-btn.selected { background: linear-gradient(135deg,#c7e5d7,#b8ddc9); color: var(--accent2-dark); border-color: transparent; box-shadow: 0 4px 12px rgba(140,180,150,0.15); font-weight: 400; }
+    .emotion-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .response-area { width: 100%; background: rgba(255,255,255,0.7); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 400; padding: 0.8rem 1rem; outline: none; resize: vertical; min-height: 90px; line-height: 1.6; transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 0.5rem; }
+    .response-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(184,149,106,0.08); }
+    .response-area::placeholder { color: var(--muted); }
+    .input-hint { font-size: 0.72rem; color: var(--muted); margin-bottom: 1rem; }
+    .submit-row { display: flex; gap: 0.8rem; align-items: center; }
+    .feedback-card { border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 1rem; border: 1px solid; animation: fadeUp 0.25s ease both; }
+    .feedback-card.correct   { background: rgba(143,201,166,0.1); border-color: rgba(143,201,166,0.4); }
+    .feedback-card.partial   { background: rgba(184,149,106,0.08); border-color: rgba(184,149,106,0.3); }
+    .feedback-card.incorrect { background: rgba(196,112,112,0.07); border-color: rgba(196,112,112,0.3); }
+    .feedback-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .feedback-text { font-size: 0.92rem; line-height: 1.6; color: var(--text); }
+    .feedback-proximity { font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+    .common-error-callout { margin-top: 0.8rem; padding: 0.7rem 1rem; background: rgba(184,149,106,0.08); border: 1px solid rgba(184,149,106,0.25); border-radius: 10px; font-size: 0.82rem; color: var(--accent); line-height: 1.5; }
+    .common-error-callout strong { display: block; margin-bottom: 0.2rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .score-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+    .score-number { font-family: 'Playfair Display', serif; font-size: 2rem; color: #6b5543; line-height: 1; }
+    .score-denom { font-size: 0.9rem; color: var(--muted); }
+    .score-pips { display: flex; gap: 5px; }
+    .pip { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--border); }
+    .pip.lit-green { background: var(--accent2); border-color: var(--accent2); }
+    .pip.lit-gold  { background: var(--accent); border-color: var(--accent); }
+    .pip.lit-red   { background: var(--danger); border-color: var(--danger); }
+    .feedback-summary { font-size: 0.95rem; line-height: 1.6; color: var(--text); margin-bottom: 0.8rem; }
+    .feedback-detail { margin-top: 0.6rem; }
+    .feedback-detail-row { margin-bottom: 0.6rem; }
+    .feedback-detail-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); display: block; margin-bottom: 0.15rem; }
+    .feedback-detail-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); }
+    .gold-standard-box { margin-top: 1rem; padding: 0.85rem 1rem; background: rgba(143,201,166,0.08); border: 1px solid rgba(143,201,166,0.25); border-radius: 10px; }
+    .gold-standard-box .gs-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent2-dark); display: block; margin-bottom: 0.3rem; }
+    .gold-standard-box .gs-text { font-size: 0.88rem; line-height: 1.6; color: var(--text); font-style: italic; }
+    .progress-card { background: rgba(245,242,239,0.7); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.4rem; margin-bottom: 0.9rem; box-shadow: 0 4px 20px rgba(184,149,106,0.1); }
+    .client-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.4rem; margin-bottom: 0.9rem; box-shadow: var(--shadow-card); }
+    .client-card-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+    .client-card-name { font-family: 'Playfair Display', serif; font-size: 1rem; color: #6b5543; }
+    .client-card-issue { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+    .client-card-toggle { font-size: 0.72rem; color: var(--muted); padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.15s, border-color 0.15s; }
+    .client-card-header:hover .client-card-toggle { color: var(--accent); border-color: var(--accent); }
+    .client-card-body { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.88rem; line-height: 1.65; color: var(--text); }
+    .client-card-defence { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; font-weight: 500; color: var(--muted); margin-top: 0.5rem; padding: 0.2rem 0.6rem; border: 1px solid var(--border); border-radius: 20px; }
+    .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem; }
+    .progress-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .progress-fraction { font-family: 'Playfair Display', serif; font-size: 1rem; color: #6b5543; }
+    .progress-track { height: 6px; background: rgba(184,149,106,0.15); border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg,#a8d5ba,#8fc9a6); border-radius: 99px; transition: width 0.4s ease; }
+    .stats-row { display: flex; gap: 1.2rem; margin-top: 0.8rem; flex-wrap: wrap; }
+    .stat { display: flex; flex-direction: column; gap: 0.1rem; }
+    .stat-val { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #6b5543; }
+    .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+    .streak-track { display: flex; gap: 6px; margin-top: 0.8rem; }
+    .streak-dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--border); transition: background 0.3s, border-color 0.3s; }
+    .streak-dot.active { background: var(--accent2); border-color: var(--accent2); }
+    .examples-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem 1.8rem; margin-bottom: 1rem; box-shadow: var(--shadow-card); animation: fadeUp 0.3s ease both; }
+    .examples-panel h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: #6b5543; margin-bottom: 1rem; }
+    .example-item { margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border-light); }
+    .example-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .example-stimulus { font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 0.5rem; font-style: italic; }
+    .example-response { font-size: 0.9rem; color: var(--text); line-height: 1.6; padding-left: 0.8rem; border-left: 2px solid rgba(143,201,166,0.5); }
+    .summary-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 1rem; text-align: center; box-shadow: var(--shadow-card); animation: fadeUp 0.35s ease both; }
+    .summary-card h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #6b5543; margin-bottom: 0.5rem; }
+    .summary-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.6; }
+    .summary-score { font-family: 'Playfair Display', serif; font-size: 3rem; color: var(--text); margin: 1rem 0; }
+    .summary-score span { font-size: 1.2rem; color: var(--muted); }
+    .summary-actions { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
+    .bailout-card { background: rgba(196,112,112,0.05); border: 1px solid rgba(196,112,112,0.3); border-radius: var(--radius); padding: 1.5rem 1.8rem; margin-bottom: 1rem; animation: fadeUp 0.3s ease both; }
+    .bailout-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--danger); margin-bottom: 0.5rem; }
+    .bailout-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+    .bailout-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    #loading { display: none; flex-direction: column; align-items: center; gap: 0.7rem; padding: 2.5rem; color: var(--muted); font-size: 0.9rem; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-msg { background: rgba(196,112,112,0.07); border: 1px solid rgba(196,112,112,0.3); border-radius: var(--radius); padding: 1rem 1.3rem; color: var(--danger); font-size: 0.88rem; margin-bottom: 1rem; }
+    .hidden { display: none !important; }
+    .next-row { display: flex; gap: 0.8rem; margin-top: 0.5rem; }
+    #debug-panel { width: 100%; max-width: 680px; background: #faf5f1; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: 0.75rem; color: var(--muted); white-space: pre-wrap; word-break: break-all; display: none; }
+    #sim-area { width: 100%; max-width: 680px; }
+    .sim-header { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.4rem; margin-bottom: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: var(--shadow-card); }
+    .sim-header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .sim-persona { font-size: 0.88rem; color: var(--text); font-weight: 500; }
+    .sim-skill { font-size: 0.72rem; color: var(--muted); }
+    .sim-timer { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--muted); min-width: 3.5rem; text-align: right; }
+    .sim-timer.urgent { color: var(--danger); }
+    .sim-gate-progress { font-size: 0.72rem; color: var(--muted); text-align: right; }
+    .chat-window { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 0.9rem; min-height: 320px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; box-shadow: var(--shadow-card); }
+    .chat-turn { display: flex; flex-direction: column; gap: 0.15rem; animation: fadeUp 0.2s ease both; }
+    .chat-turn-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 0 0.5rem; }
+    .chat-bubble { padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.92rem; line-height: 1.6; max-width: 92%; }
+    .chat-bubble.client { background: rgba(255,255,255,0.7); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-bubble.therapist { background: rgba(184,149,106,0.1); border: 1px solid rgba(184,149,106,0.2); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-bubble.system { background: transparent; border: none; color: var(--muted); font-style: italic; font-size: 0.82rem; align-self: center; }
+    .chat-typing { display: flex; align-items: center; gap: 4px; padding: 0.6rem 0.8rem; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: typingPulse 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingPulse { 0%,60%,100% { opacity: 0.3; transform: scale(0.85); } 30% { opacity: 1; transform: scale(1); } }
+    .sim-input-area { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.2rem; margin-bottom: 0.9rem; box-shadow: var(--shadow-card); }
+    .sim-textarea { width: 100%; background: rgba(255,255,255,0.65); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 400; padding: 0.7rem 0.9rem; outline: none; resize: none; height: 72px; line-height: 1.5; transition: border-color 0.2s; margin-bottom: 0.6rem; }
+    .sim-textarea:focus { border-color: var(--accent); }
+    .sim-textarea::placeholder { color: var(--muted); }
+    .sim-input-row { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
+    .sim-hint { font-size: 0.7rem; color: var(--muted); }
+    .sim-end-btn { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+    .sim-end-btn:hover { color: var(--danger); border-color: var(--danger); }
+    .eval-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 0.9rem; box-shadow: var(--shadow-card); animation: fadeUp 0.3s ease both; }
+    .eval-score-row { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1rem; }
+    .eval-score-num { font-family: 'Playfair Display', serif; font-size: 2.4rem; line-height: 1; color: #6b5543; }
+    .eval-score-denom { font-size: 0.9rem; color: var(--muted); }
+    .eval-gate { font-size: 0.72rem; font-weight: 500; padding: 0.2rem 0.65rem; border-radius: 20px; border: 1px solid; margin-left: 0.5rem; }
+    .eval-gate.met { color: #4a7a5a; border-color: rgba(143,201,166,0.5); background: rgba(143,201,166,0.1); }
+    .eval-gate.not-met { color: var(--muted); border-color: var(--border); }
+    .eval-consecutive { font-size: 0.78rem; color: var(--muted); margin-left: 0.4rem; }
+    .eval-summary { font-size: 0.92rem; line-height: 1.65; color: var(--text); margin-bottom: 1rem; }
+    .eval-section { margin-bottom: 0.85rem; }
+    .eval-section-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+    .eval-section-text { font-size: 0.88rem; line-height: 1.55; color: var(--text); }
+    .eval-quote { font-style: italic; color: var(--muted); padding-left: 0.6rem; border-left: 2px solid var(--border); margin-top: 0.2rem; font-size: 0.85rem; line-height: 1.5; }
+    .eval-level-advance { margin-top: 1rem; padding: 0.8rem 1rem; background: rgba(184,149,106,0.08); border: 1px solid rgba(184,149,106,0.25); border-radius: 10px; font-size: 0.88rem; color: var(--accent); }
+    .sim-actions { display: flex; gap: 0.8rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    #comp-area { width: 100%; max-width: 680px; }
+    .comp-stimulus { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 0.7rem; box-shadow: var(--shadow-card); animation: fadeUp 0.3s ease both; }
+    .comp-instruction { font-size: 0.78rem; color: var(--muted); text-align: center; padding: 0.3rem 0; letter-spacing: .02em; }
+    .comp-options { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.7rem; }
+    .comp-option { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; overflow: hidden; }
+    .comp-option:hover:not(.comp-locked) { border-color: rgba(184,149,106,0.4); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+    .comp-option.comp-selected { border-color: var(--accent) !important; border-width: 1.5px !important; }
+    .comp-option.comp-revealed-best { border-color: rgba(143,201,166,0.5); }
+    .comp-option.comp-revealed-mid  { border-color: rgba(184,149,106,0.4); }
+    .comp-option.comp-revealed-weak { border-color: rgba(196,112,112,0.35); }
+    .comp-option.comp-selected.comp-revealed-best,
+    .comp-option.comp-selected.comp-revealed-mid,
+    .comp-option.comp-selected.comp-revealed-weak { border-color: var(--accent) !important; border-width: 1.5px !important; }
+    .comp-option-header { display: flex; align-items: flex-start; gap: 12px; padding: 0.9rem 1.1rem; }
+    .comp-letter { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--muted); flex-shrink: 0; margin-top: 2px; transition: background .2s, border-color .2s, color .2s; }
+    .comp-option.comp-selected .comp-letter { background: var(--accent); border-color: var(--accent); color: white; }
+    .comp-option.comp-revealed-best .comp-letter { background: rgba(143,201,166,0.15); border-color: rgba(143,201,166,0.4); color: #4a7a5a; }
+    .comp-option.comp-revealed-mid  .comp-letter { background: rgba(184,149,106,0.1); border-color: rgba(184,149,106,0.3); color: var(--accent); }
+    .comp-option.comp-revealed-weak .comp-letter { background: rgba(196,112,112,0.1); border-color: rgba(196,112,112,0.3); color: var(--danger); }
+    .comp-option.comp-selected.comp-revealed-best .comp-letter,
+    .comp-option.comp-selected.comp-revealed-mid  .comp-letter,
+    .comp-option.comp-selected.comp-revealed-weak .comp-letter { background: var(--accent); border-color: var(--accent); color: white; }
+    .comp-response-text { font-size: 0.88rem; line-height: 1.65; color: var(--text); flex: 1; }
+    .comp-reveal-body { display: none; border-top: 1px solid var(--border-light); padding: 0.7rem 1.1rem 0.85rem 3.1rem; flex-direction: column; gap: 5px; animation: fadeUp 0.2s ease both; }
+    .comp-option.comp-revealed-best .comp-reveal-body,
+    .comp-option.comp-revealed-mid  .comp-reveal-body,
+    .comp-option.comp-revealed-weak .comp-reveal-body { display: flex; }
+    .comp-quality-badge { display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; align-self: flex-start; }
+    .comp-badge-best { background: rgba(143,201,166,0.15); color: #4a7a5a; border: 0.5px solid rgba(143,201,166,0.35); }
+    .comp-badge-mid  { background: rgba(184,149,106,0.1); color: var(--accent); border: 0.5px solid rgba(184,149,106,0.25); }
+    .comp-badge-weak { background: rgba(196,112,112,0.1); color: var(--danger); border: 0.5px solid rgba(196,112,112,0.25); }
+    .comp-explanation { font-size: 0.78rem; line-height: 1.6; color: var(--muted); }
+    .comp-action-row { display: flex; gap: 0.7rem; align-items: center; margin-bottom: 0.75rem; }
+    .comp-pick-note { font-size: 0.72rem; color: var(--muted); font-style: italic; margin-left: auto; }
+    .comp-progress-card { background: rgba(245,242,239,0.7); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.4rem; margin-bottom: 0.7rem; box-shadow: 0 4px 20px rgba(184,149,106,0.1); }
+  </style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">KorSkills<span> / Drill</span></div>
+    <p class="login-subtitle">Clinical micro-skills training</p>
+    <label class="login-label" for="login-id-input">Your Trainee ID</label>
+    <input id="login-id-input" class="login-input" type="text" placeholder="Enter your ID" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Enter</button>
+  </div>
+</div>
+
+<!-- Main app -->
+<div id="app-wrap" style="display:none;width:100%;flex-direction:column;align-items:center;">
+<header>
+  <div class="logo">KorSkills <span>/ Drill</span></div>
+  <div style="display:flex;align-items:center;gap:0.8rem;">
+    <div id="header-progress" style="font-size:0.8rem;color:var(--muted);"></div>
+    <div id="user-badge" onclick="logOut()" title="Click to log out"></div>
+  </div>
+</header>
+
+<div id="config-panel">
+  <div id="config-summary" onclick="expandConfig()">
+    <span id="config-summary-text">TRN-1 &middot; EFT · Empathic Reflection &middot; Level 1</span>
+    <span style="color:var(--accent);font-size:0.75rem;">Change ↑</span>
+  </div>
+  <div id="config-fields">
+    <h2>Session Setup</h2>
+    <div class="fields-row">
+      <div style="display:none;"><label for="trainee-id">Trainee ID</label><input id="trainee-id" type="text" value="TRN-1" placeholder="TRN-1"/></div>
+      <div><label for="skill-name">Skill</label><select id="skill-name" onchange="onSkillChange()"><option value="Empathic Reflection">EFT &middot; Empathic Reflection</option><option value="Emotional Validation">EFT &middot; Emotional Validation</option></select></div>
+      <div><label for="level">Level</label><select id="level" onchange="onLevelChange()"><option value="1">Level 1 &mdash; Recognition</option><option value="2">Level 2 &mdash; Comparative</option><option value="3">Level 3 &mdash; Labelling</option><option value="3b">Level 3b &mdash; Repair</option><option value="4">Level 4 &mdash; Reflecting</option></select></div>
+    </div>
+    <div id="l2-config">
+      <div class="fields-row-2">
+        <div><label for="streak-target">Streak needed to pass</label><input id="streak-target" type="number" value="3" min="1" max="10"/></div>
+        <div><label for="bailout-limit">Stop after this many low scores in a row</label><input id="bailout-limit" type="number" value="5" min="2" max="10"/></div>
+      </div>
+      <label class="toggle-row"><input type="checkbox" id="show-examples-toggle"/> Show gold standard examples before starting</label>
+    </div>
+    <div id="l2-comp-config" style="display:none;margin-top:0.6rem;">
+      <p id="l2-comp-description" style="font-size:0.82rem;color:var(--muted);line-height:1.55;">Three therapist responses to the same client line. Pick the best one, then see why each response works or doesn&rsquo;t. Gate: 6 out of 8 correct.</p>
+    </div>
+    <div id="l4-config" style="display:none;margin-top:0.6rem;">
+      <p style="font-size:0.82rem;color:var(--muted);line-height:1.55;margin-bottom:0.8rem;">A full AI client session. The Supervision AI evaluates your skill use and scores the session. Three consecutive sessions scoring 7+ pass the gate.</p>
+      <label style="font-size:0.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:0.4rem;">Session duration</label>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="diff-btn active" data-dur="2" onclick="setDuration(2)">2 min</button>
+        <button class="diff-btn" data-dur="5" onclick="setDuration(5)">5 min</button>
+        <button class="diff-btn" data-dur="10" onclick="setDuration(10)">10 min</button>
+      </div>
+    </div>
+    <div id="level-description" style="margin-top:0.6rem;display:none;">
+      <p id="level-description-text" style="font-size:0.82rem;color:var(--muted);line-height:1.55;"></p>
+    </div>
+    <div id="difficulty-filter-row">
+      <span>Difficulty</span>
+      <button class="diff-btn active" data-diff="all"   onclick="setDiff('all')">All</button>
+      <button class="diff-btn"        data-diff="Easy"  onclick="setDiff('Easy')">Easy</button>
+      <button class="diff-btn"        data-diff="Medium" onclick="setDiff('Medium')">Medium</button>
+      <button class="diff-btn"        data-diff="Hard"  onclick="setDiff('Hard')">Hard</button>
+    </div>
+    <div id="pack-selector-row" style="margin-top:0.8rem;">
+      <label for="pack-select">Client Pack</label>
+      <select id="pack-select">
+        <option value="none">No pack &mdash; generic stimuli</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:0.8rem;align-items:center;margin-top:1.2rem;">
+      <button class="btn btn-primary" id="start-btn" onclick="startDrill()">Start</button>
+      <button class="btn btn-ghost btn-sm" onclick="toggleDebug()">Debug</button>
+    </div>
+  </div>
+</div>
+
+<div id="drill-area">
+  <div id="loading"><div class="spinner"></div><span id="loading-text">Loading&hellip;</span></div>
+  <div id="error-box" class="hidden"></div>
+  <div id="examples-panel" class="examples-panel hidden">
+    <h3>Gold Standard Examples</h3>
+    <div id="examples-list"></div>
+    <div style="margin-top:1.2rem;"><button class="btn btn-primary btn-sm" onclick="dismissExamples()">Start Drill</button></div>
+  </div>
+  <div id="progress-card" class="progress-card hidden">
+    <div class="progress-header"><span class="progress-label">Gate Progress</span><span class="progress-fraction" id="prog-fraction">0/8 correct</span></div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-val" id="stat-correct">0</span><span class="stat-label" id="stat-correct-label">Correct</span></div>
+      <div class="stat"><span class="stat-val" id="stat-attempted">0</span><span class="stat-label">Attempted</span></div>
+      <div class="stat"><span class="stat-val" id="stat-remaining">10</span><span class="stat-label" id="stat-remaining-label">Remaining</span></div>
+      <div class="stat"><span class="stat-val" id="stat-level">1</span><span class="stat-label">Level</span></div>
+    </div>
+    <div id="streak-row" class="streak-track hidden"></div>
+  </div>
+  <!-- Client card — shown when drill pack has a background story -->
+  <div id="client-card" class="client-card hidden">
+    <div class="client-card-header" onclick="toggleClientCard()">
+      <div>
+        <div class="client-card-name" id="client-card-name">—</div>
+        <div class="client-card-issue" id="client-card-issue"></div>
+      </div>
+      <span class="client-card-toggle" id="client-card-toggle">Hide ↑</span>
+    </div>
+    <div class="client-card-body" id="client-card-body" style="display:block;">
+      <div id="client-card-background"></div>
+      <div id="client-card-defence" class="client-card-defence" style="display:none;"></div>
+    </div>
+  </div>
+  <div id="stimulus-card" class="drill-card hidden">
+    <div class="drill-meta">
+      <span class="tag tag-level" id="tag-level">L1</span>
+      <span class="tag tag-skill" id="tag-skill">Empathic Reflection</span>
+      <span class="tag" id="tag-diff" style="display:none;"></span>
+    </div>
+    <div id="stimulus-context" class="stimulus-context" style="display:none;"></div>
+    <div class="stimulus-label">Client Fragment</div>
+    <div class="stimulus-text" id="stimulus-text"></div>
+    <div id="l1-input">
+      <div class="question-text">What is the primary emotion being expressed?</div>
+      <div class="emotion-grid" id="emotion-grid"></div>
+    </div>
+    <div id="l2-input" class="hidden">
+      <div class="question-text" id="l2-question-text">Write a response.</div>
+      <textarea id="response-textarea" class="response-area" placeholder="" oninput="onResponseInput()"></textarea>
+      <div class="input-hint" id="l2-input-hint">1&ndash;2 sentences. Ctrl+Enter to submit.</div>
+    </div>
+    <div class="submit-row"><button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()" disabled>Submit Answer</button></div>
+  </div>
+  <div id="feedback-card" class="hidden"></div>
+  <div id="next-row" class="next-row hidden">
+    <button class="btn btn-primary btn-sm" onclick="nextDrill()">Next Drill</button>
+    <button class="btn btn-ghost btn-sm" onclick="resetSession()">Change Setup</button>
+  </div>
+  <div id="bailout-card" class="hidden"></div>
+  <div id="summary-card" class="summary-card hidden"></div>
+</div>
+
+<!-- Level 3 Simulation UI -->
+<div id="sim-area" style="display:none;width:100%;max-width:680px;">
+  <div id="sim-header" class="sim-header">
+    <div class="sim-header-left">
+      <span class="tag tag-level" style="border-color:#BA7517;color:#BA7517;">L3</span>
+      <div>
+        <div class="sim-persona" id="sim-persona-name">—</div>
+        <div class="sim-skill" id="sim-skill-name">—</div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div class="sim-timer" id="sim-timer">10:00</div>
+      <div class="sim-gate-progress" id="sim-gate-progress"></div>
+    </div>
+  </div>
+  <div class="chat-window" id="chat-window"></div>
+  <div class="sim-input-area" id="sim-input-area">
+    <textarea id="sim-textarea" class="sim-textarea" placeholder="Your response…" oninput="onSimInput()"></textarea>
+    <div class="sim-input-row">
+      <span class="sim-hint">Ctrl+Enter to send</span>
+      <button class="sim-end-btn" onclick="endSimEarly()">End session</button>
+      <button class="btn btn-primary btn-sm" id="sim-send-btn" onclick="sendTurn()" disabled>Send</button>
+    </div>
+  </div>
+  <div id="eval-loading" style="display:none;text-align:center;padding:2rem;color:var(--muted);font-size:0.9rem;">
+    <div class="spinner" style="margin:0 auto 0.75rem;"></div>
+    Evaluating session…
+  </div>
+  <div id="eval-card" style="display:none;"></div>
+  <div id="sim-actions" class="sim-actions" style="display:none;"></div>
+</div>
+<div id="debug-panel"></div>
+
+<script>
+var BASE = 'https://therapygym-proxy.dshere.workers.dev';
+var SET_LEVEL_URL = 'https://therapygym.app.n8n.cloud/webhook/set-level';
+var START_SIM_URL = 'https://therapygym.app.n8n.cloud/webhook/start-simulation';
+var CHAT_URL = 'https://therapygym.app.n8n.cloud/webhook/chat';
+var EVAL_URL = 'https://therapygym.app.n8n.cloud/webhook/evaluate-session';
+var MAX_L1 = 10;
+// EFT primary emotions — default when no pack selected
+var EFT_PRIMARY = ['Fear','Sadness','Anger','Shame','Disgust','Loneliness','Hurt','Grief'];
+var EMOTIONS = EFT_PRIMARY; // overridden per-pack at drill start
+
+var LIST_PACKS_URL = 'https://therapygym.app.n8n.cloud/webhook/list-packs';
+// Pack registry: populated on load, keyed by pack_page_id
+var PACK_REGISTRY = {};
+
+// Sim state
+var SIM = {
+  sessionId: null, personaName: null, skillName: null,
+  traineeId: null, maxMinutes: 2,
+  startTime: null, timerInterval: null,
+  sending: false, ended: false,
+  selectedDuration: 2
+};
+
+function setDuration(mins) {
+  SIM.selectedDuration = mins;
+  document.querySelectorAll('[data-dur]').forEach(function(b) {
+    b.classList.toggle('active', parseInt(b.dataset.dur) === mins);
+  });
+}
+
+// Proximity feedback copy
+var PROX_FEEDBACK = {
+  3: { cls: 'correct',   icon: '✓', text: 'Spot on.' },
+  2: { cls: 'partial',   icon: '~', text: 'Close — you picked up part of what\'s there.' },
+  1: { cls: 'partial',   icon: '~', text: 'Plausible, but not quite the primary emotion here.' },
+  0: { cls: 'incorrect', icon: '✗', text: 'That one doesn\'t fit this fragment.' }
+};
+
+var S = {
+  traineeId: 'TRN-1', skillName: 'Empathic Reflection', level: 1,
+  progressPageId: null, gateThreshold: '8/10',
+  streakTarget: 3, bailoutLimit: 5,
+  diffFilter: 'all', packId: null,
+  stimuli: [], queue: [], cur: null,
+  attempted: 0, correct: 0, selected: null, streak: 0, fails: 0,
+  pack: null
+};
+
+function collapseConfig() {
+  var p = document.getElementById('config-panel');
+  p.classList.add('collapsed');
+  var lvlMap = { 1: 'Level 1 \u2014 Recognition', 2: 'Level 2 \u2014 Comparative', 3: 'Level 3 \u2014 Labelling', '3b': 'Level 3b \u2014 Repair', 4: 'Level 4 \u2014 Reflecting' };
+  var lvlText = lvlMap[S.level] || ('Level ' + S.level);
+  var diffText = S.diffFilter !== 'all' ? ' \u00b7 ' + S.diffFilter : '';
+  var packEl = document.getElementById('pack-select');
+  var packText = '';
+  if (packEl && packEl.value && packEl.value !== 'none') {
+    var selOpt = packEl.options[packEl.selectedIndex];
+    packText = selOpt ? ' \u00b7 ' + selOpt.textContent : '';
+  }
+  document.getElementById('config-summary-text').textContent =
+    S.traineeId + ' \u00b7 ' + S.skillName + ' \u00b7 ' + lvlText + (S.level === 1 || S.level === 3 ? diffText : '') + packText;
+}
+function expandConfig() { document.getElementById('config-panel').classList.remove('collapsed'); }
+function dbg(l, d) { document.getElementById('debug-panel').textContent += '\n[' + l + ']\n' + JSON.stringify(d, null, 2) + '\n'; }
+function toggleDebug() { var p = document.getElementById('debug-panel'); p.style.display = p.style.display === 'none' ? 'block' : 'none'; }
+function H() { for (var i = 0; i < arguments.length; i++) document.getElementById(arguments[i]).classList.add('hidden'); }
+function V() { for (var i = 0; i < arguments.length; i++) document.getElementById(arguments[i]).classList.remove('hidden'); }
+function loading(msg) {
+  document.getElementById('loading-text').textContent = msg || 'Loading\u2026';
+  document.getElementById('loading').style.display = 'flex';
+  H('stimulus-card','feedback-card','next-row','error-box','summary-card','examples-panel','bailout-card','client-card');
+  hideSim();
+}
+function doneLoading() { document.getElementById('loading').style.display = 'none'; }
+function err(msg) { var el = document.getElementById('error-box'); el.textContent = '\u26a0 ' + msg; el.className = 'error-msg'; V('error-box'); doneLoading(); }
+
+function setDiff(d) {
+  S.diffFilter = d;
+  document.querySelectorAll('.diff-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.diff === d);
+  });
+}
+
+function shuffle(a) {
+  var b = a.slice();
+  for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; }
+  return b;
+}
+
+function spread(stimuli, count) {
+  var g = {};
+  stimuli.forEach(function(s) { var e = s.target_emotion || '?'; if (!g[e]) g[e] = []; g[e].push(s); });
+  Object.keys(g).forEach(function(k) { g[k] = shuffle(g[k]); });
+  var keys = shuffle(Object.keys(g));
+  var out = [], i = 0, loops = 0, max = count * keys.length, lim = Math.min(count, stimuli.length);
+  while (out.length < lim && loops < max) {
+    loops++;
+    var k = keys[i % keys.length];
+    if (g[k] && g[k].length > 0) out.push(g[k].shift());
+    i++;
+    if (Object.keys(g).every(function(k2) { return g[k2].length === 0; })) break;
+  }
+  for (var a = 0; a < out.length; a++) {
+    var b = Math.floor(Math.random() * out.length);
+    if (a === b) continue;
+    var pa = a > 0 ? out[a-1].target_emotion : null, na = a < out.length-1 ? out[a+1].target_emotion : null;
+    var pb = b > 0 ? out[b-1].target_emotion : null, nb = b < out.length-1 ? out[b+1].target_emotion : null;
+    var ea = out[a].target_emotion, eb = out[b].target_emotion;
+    if (eb !== pa && eb !== na && ea !== pb && ea !== nb) { var t2 = out[a]; out[a] = out[b]; out[b] = t2; }
+  }
+  return out;
+}
+
+function getReq() { return parseInt((S.gateThreshold || '8/10').split('/')[0]) || 8; }
+
+function onLevelChange() {
+  var rawVal = document.getElementById('level').value;
+  var l = rawVal === '3b' ? '3b' : parseInt(rawVal);
+  document.getElementById('l2-config').classList.toggle('visible', l === 3 || l === '3b');
+  var l2c = document.getElementById('l2-comp-config');
+  var l4 = document.getElementById('l4-config');
+  if (l2c) l2c.style.display = l === 2 ? 'block' : 'none';
+  if (l4) l4.style.display = l === 4 ? 'block' : 'none';
+  var diffRow = document.getElementById('difficulty-filter-row');
+  if (diffRow) diffRow.style.display = (l === 2 || l === 4) ? 'none' : '';
+  var packRow = document.getElementById('pack-selector-row');
+  if (packRow) packRow.style.display = l === 4 ? 'none' : '';
+  var packSel = document.getElementById('pack-select');
+  if (packSel) {
+    var noneOpt = packSel.options[0];
+    if (noneOpt) noneOpt.style.display = l === 2 ? 'none' : '';
+    if (l === 2 && packSel.value === 'none' && packSel.options.length > 1) packSel.selectedIndex = 1;
+  }
+  updateLevelDescription();
+}
+function onResponseInput() {
+  document.getElementById('submit-btn').disabled = document.getElementById('response-textarea').value.trim().length < 5;
+}
+
+function updateProg() {
+  var l = S.level;
+  if (l === 1) {
+    var req = getReq(), pct = Math.min(100, Math.round(S.correct / req * 100));
+    document.getElementById('prog-fraction').textContent = S.correct + '/' + req + ' correct';
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('stat-correct').textContent = S.correct;
+    document.getElementById('stat-correct-label').textContent = 'Correct';
+    document.getElementById('stat-attempted').textContent = S.attempted;
+    document.getElementById('stat-remaining').textContent = Math.max(0, MAX_L1 - S.attempted);
+    document.getElementById('stat-remaining-label').textContent = 'Remaining';
+    H('streak-row');
+  } else {
+    var pct2 = Math.min(100, Math.round(S.streak / S.streakTarget * 100));
+    document.getElementById('prog-fraction').textContent = S.streak + '/' + S.streakTarget + ' streak';
+    document.getElementById('prog-fill').style.width = pct2 + '%';
+    document.getElementById('stat-correct').textContent = S.correct;
+    document.getElementById('stat-correct-label').textContent = '2+ scored';
+    document.getElementById('stat-attempted').textContent = S.attempted;
+    document.getElementById('stat-remaining').textContent = S.streak;
+    document.getElementById('stat-remaining-label').textContent = 'Streak';
+    var row = document.getElementById('streak-row'); row.innerHTML = '';
+    for (var i = 0; i < S.streakTarget; i++) {
+      var d = document.createElement('div');
+      d.className = 'streak-dot' + (i < S.streak ? ' active' : '');
+      row.appendChild(d);
+    }
+    V('streak-row');
+  }
+  document.getElementById('stat-level').textContent = S.level;
+  V('progress-card');
+  document.getElementById('header-progress').textContent =
+    S.level === 1 ? S.correct + ' correct \u00b7 ' + S.attempted + ' done' :
+    'Streak ' + S.streak + '/' + S.streakTarget + ' \u00b7 ' + S.attempted + ' done';
+}
+
+function startDrill() {
+  S.traineeId = LOGGED_IN_TRAINEE || document.getElementById('trainee-id').value.trim() || 'TRN-1';
+  S.skillName = document.getElementById('skill-name').value;
+  var rawLevel = document.getElementById('level').value;
+  S.level = rawLevel === '3b' ? '3b' : parseInt(rawLevel);
+  var st = document.getElementById('streak-target'), bl = document.getElementById('bailout-limit');
+  S.streakTarget = st ? parseInt(st.value) || 3 : 3;
+  S.bailoutLimit = bl ? parseInt(bl.value) || 5 : 5;
+  var packEl = document.getElementById('pack-select');
+  S.packId = (packEl && packEl.value && packEl.value !== 'none') ? packEl.value : null;
+  EMOTIONS = EFT_PRIMARY;
+  S.attempted = 0; S.correct = 0; S.streak = 0; S.fails = 0;
+  document.getElementById('start-btn').disabled = true;
+  H('summary-card','bailout-card');
+  collapseConfig();
+  if (S.level === 4) { startSimulation(); return; }
+  if (S.level === 2) { startComparative(); return; }
+  fetchStimuli();
+}
+
+function applyDiffFilter(stimuli) {
+  if (S.diffFilter === 'all') return stimuli;
+  return stimuli.filter(function(s) { return s.difficulty === S.diffFilter; });
+}
+
+function fetchStimuli() {
+  if (S.level === 4) {
+    startSimulation();
+    return;
+  }
+  loading('Loading drills\u2026');
+  var body = { trainee_id: S.traineeId, skill_name: S.skillName, level: S.level, activity_type: S.level === 2 ? 'Comparative' : S.level === '3b' ? 'Repair' : S.level === 3 ? 'Free label' : 'Emotion pick' };
+  if (S.packId) body.pack_id = S.packId;
+  fetch(BASE + '/start-drill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) { return r.text().then(function(t) {
+    dbg('start raw', t);
+    if (!r.ok) throw new Error('Server ' + r.status + ': ' + t);
+    var p; try { p = JSON.parse(t); } catch(e) { throw new Error('Bad JSON: ' + t.substring(0, 200)); }
+    var d = Array.isArray(p) ? p[0] : p;
+    dbg('start data', d);
+    S.progressPageId = d.progress_page_id;
+    S.gateThreshold = d.gate_threshold || '8/10';
+    S.pack = d.pack || null;
+    if (!d.stimuli || !d.stimuli.length) throw new Error('No stimuli returned.');
+    // Apply difficulty filter
+    var filtered = applyDiffFilter(d.stimuli);
+    if (!filtered.length) {
+      filtered = d.stimuli; // fallback to all if filter yields nothing
+      setDiff('all');
+    }
+    S.stimuli = spread(filtered, MAX_L1);
+    S.queue = S.stimuli.slice();
+    dbg('order', S.stimuli.map(function(s) { return s.target_emotion; }));
+    doneLoading(); updateProg(); renderClientCard();
+    var ex = document.getElementById('show-examples-toggle');
+    if (S.level === 2 && ex && ex.checked) showExamples(d.stimuli); else nextStim();
+  }); })
+  .catch(function(e) { err(e.message); dbg('start err', e.message); document.getElementById('start-btn').disabled = false; });
+}
+
+function showExamples(stimuli) {
+  var s = shuffle(stimuli.filter(function(x) { return x.correct_label_example && x.correct_label_example.trim(); })).slice(0, 3);
+  if (!s.length) { nextStim(); return; }
+  document.getElementById('examples-list').innerHTML = s.map(function(x) {
+    return '<div class="example-item"><div class="example-stimulus">"' + x.stimulus_text + '"</div><div class="example-response">' + x.correct_label_example + '</div></div>';
+  }).join('');
+  V('examples-panel');
+}
+function dismissExamples() { H('examples-panel'); nextStim(); }
+
+function nextStim() {
+  if (!S.queue.length) S.queue = spread(S.stimuli, S.stimuli.length);
+  S.cur = S.queue.shift();
+  S.selected = null;
+  renderStim(S.cur);
+}
+
+function renderStim(s) {
+  document.getElementById('tag-level').textContent = 'L' + S.level;
+  document.getElementById('tag-skill').textContent = S.skillName;
+
+  // Difficulty tag
+  var tagDiff = document.getElementById('tag-diff');
+  if (s.difficulty) {
+    tagDiff.textContent = s.difficulty;
+    tagDiff.className = 'tag tag-diff-' + s.difficulty.toLowerCase();
+    tagDiff.style.display = '';
+  } else {
+    tagDiff.style.display = 'none';
+  }
+
+  // Context
+  var ctx = s.context || '';
+  var ctxEl = document.getElementById('stimulus-context');
+  if (ctx) { ctxEl.textContent = ctx; ctxEl.style.display = 'block'; }
+  else { ctxEl.style.display = 'none'; }
+
+  document.getElementById('stimulus-text').textContent = s.stimulus_text || '(no text)';
+
+  // Repair drill -- show miss and disaffiliation elements
+  var repairMissEl = document.getElementById('repair-miss-block');
+  if (S.level === '3b' && s.therapist_miss_text) {
+    if (!repairMissEl) {
+      var stimCard = document.getElementById('stimulus-text');
+      var missBlock = document.createElement('div');
+      missBlock.id = 'repair-miss-block';
+      missBlock.innerHTML = '<div class="repair-section-label">Therapist response (the miss)</div>'
+        + '<div class="therapist-miss-text" id="therapist-miss-text"></div>'
+        + '<div class="repair-section-label">Client</div>'
+        + '<div class="client-disaffiliation-text" id="client-disaffiliation-text"></div>';
+      stimCard.parentNode.insertBefore(missBlock, stimCard.nextSibling);
+    }
+    document.getElementById('therapist-miss-text').textContent = s.therapist_miss_text;
+    document.getElementById('client-disaffiliation-text').textContent = s.client_disaffiliation_text || '';
+    document.getElementById('repair-miss-block').style.display = 'block';
+  } else if (repairMissEl) {
+    repairMissEl.style.display = 'none';
+  }
+
+  if (S.level === 1) {
+    V('l1-input'); H('l2-input');
+    var g = document.getElementById('emotion-grid');
+    g.innerHTML = '';
+    var lbl = document.getElementById('emotion-grid-label');
+    if (!lbl) {
+      lbl = document.createElement('div');
+      lbl.id = 'emotion-grid-label';
+      lbl.className = 'emotion-grid-label';
+      lbl.textContent = 'Select the primary emotion';
+      g.parentNode.insertBefore(lbl, g);
+    }
+    EMOTIONS.forEach(function(e) {
+      var b = document.createElement('button');
+      b.className = 'emotion-btn';
+      b.textContent = e;
+      b.addEventListener('click', (function(em, bt) { return function() { selEmo(em, bt); }; })(e, b));
+      g.appendChild(b);
+    });
+    document.getElementById('submit-btn').disabled = true;
+  } else {
+    H('l1-input'); V('l2-input');
+    var skillLabels = {
+      'Empathic Reflection': {
+        question: 'Write an Empathic Reflection response.',
+        placeholder: 'e.g. There\'s a real fear underneath all that...',
+        hint: '1\u20132 sentences. Name the emotion and reflect it in attuned language. Ctrl+Enter to submit.'
+      },
+      'Emotional Validation': {
+        question: S.level === '3b' ? 'Write the repair response.' : 'Write an Emotional Validation response.',
+        placeholder: S.level === '3b' ? 'e.g. I moved past what you were saying. What you were telling me was...' : 'e.g. Of course that sits badly \u2014 given everything you\'ve been carrying...',
+        hint: S.level === '3b'
+          ? 'Acknowledge the miss, re-validate with specificity, no self-justification, invite correction. Ctrl+Enter to submit.'
+          : '1\u20132 sentences. Link the feeling to the situation. Contextualise, don\'t just name. Ctrl+Enter to submit.'
+      }
+    };
+    var labels = skillLabels[S.skillName] || { question: 'Write a response.', placeholder: '', hint: '1\u20132 sentences. Ctrl+Enter to submit.' };
+    var qEl = document.getElementById('l2-question-text');
+    var hEl = document.getElementById('l2-input-hint');
+    var ta = document.getElementById('response-textarea');
+    if (qEl) qEl.textContent = labels.question;
+    if (hEl) hEl.textContent = labels.hint;
+    if (ta) ta.placeholder = labels.placeholder;
+    document.getElementById('response-textarea').value = '';
+    document.getElementById('submit-btn').disabled = true;
+  }
+  V('stimulus-card'); H('feedback-card','next-row','bailout-card');
+}
+
+function selEmo(e, b) {
+  S.selected = e;
+  document.querySelectorAll('.emotion-btn').forEach(function(x) { x.classList.remove('selected'); });
+  b.classList.add('selected');
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() { if (S.level === 1) sub1(); else sub2(); }
+
+function proximityScore(answer, s) {
+  var ans = (answer || '').trim();
+  var s3 = s.score3_emotions || [];
+  var s2 = s.score2_emotions || [];
+  var s1 = s.score1_emotions || [];
+  if (s3.includes(ans)) return 3;
+  if (s2.includes(ans)) return 2;
+  if (s1.includes(ans)) return 1;
+  return 0;
+}
+
+function sub1() {
+  if (!S.selected) return;
+  document.getElementById('submit-btn').disabled = true;
+  document.querySelectorAll('.emotion-btn').forEach(function(b) { b.disabled = true; });
+  var s = S.cur;
+  var score = proximityScore(S.selected, s);
+  var isCorrect = (score === 3);
+  S.attempted++;
+  if (isCorrect) S.correct++;
+  updateProg();
+  fbL1(score, s);
+  var req = getReq();
+  if (S.correct >= req)       { H('next-row'); setTimeout(function() { endL1(true);  }, 1200); return; }
+  if (S.attempted >= MAX_L1)  { H('next-row'); setTimeout(function() { endL1(false); }, 1200); return; }
+  V('next-row');
+}
+
+function sub2() {
+  var txt = document.getElementById('response-textarea').value.trim();
+  if (!txt) return;
+  document.getElementById('submit-btn').disabled = true;
+  S.attempted++;
+  loading('Scoring your response\u2026');
+  var s = S.cur;
+  fetch(BASE + '/score-drill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      trainee_id: S.traineeId, skill_name: S.skillName, level: S.level,
+      activity_type: S.level === '3b' ? 'Repair' : 'Free label',
+      stimulus_id: s.stimulus_id, trainee_response: txt,
+      therapist_miss_text: s.therapist_miss_text || '',
+      client_disaffiliation_text: s.client_disaffiliation_text || '',
+      drills_attempted: S.attempted, drills_correct: S.correct,
+      progress_page_id: S.progressPageId, gate_threshold: S.gateThreshold,
+      current_streak: S.streak, streak_target: S.streakTarget,
+      stimulus_text: s.stimulus_text, target_emotion: s.target_emotion,
+      correct_label_example: s.correct_label_example || '',
+      score2_emotions: s.score2_emotions || [],
+      score3_emotions: s.score3_emotions || []
+    })
+  })
+  .then(function(r) { return r.text().then(function(t) {
+    dbg('score raw', t);
+    if (!r.ok) throw new Error('Server ' + r.status + ': ' + t);
+    var p; try { p = JSON.parse(t); } catch(e) { throw new Error('Bad JSON: ' + t.substring(0, 200)); }
+    var d = Array.isArray(p) ? p[0] : p;
+    dbg('score data', d);
+    S.streak = d.current_streak || 0;
+    if (d.passed) { S.correct++; S.fails = 0; } else { S.fails++; }
+    doneLoading(); updateProg(); fbL2(d, s); V('stimulus-card');
+    if (d.gate_met) {
+      var nr = document.getElementById('next-row');
+      nr.innerHTML = '<button class="btn btn-primary btn-sm" onclick="summary(true)">Continue \u2192</button>';
+      V('next-row');
+      return;
+    }
+    if (S.fails >= S.bailoutLimit) { H('next-row'); setTimeout(function() { bailout(); }, 1200); return; }
+    document.getElementById('next-row').innerHTML = '<button class="btn btn-primary btn-sm" onclick="nextDrill()">Next Drill</button><button class="btn btn-ghost btn-sm" onclick="resetSession()">Change Setup</button>';
+    V('next-row');
+  }); })
+  .catch(function(e) { err('Could not score: ' + e.message); dbg('score err', e.message); S.attempted--; });
+}
+
+function fbL1(score, s) {
+  var div = document.getElementById('feedback-card');
+  var m = PROX_FEEDBACK[score] || PROX_FEEDBACK[0];
+  div.className = 'feedback-card ' + m.cls;
+
+  // Show which tier they landed in for scores 1-2
+  var proximityNote = '';
+  var primary = (s.score3_emotions || []).join(' / ');
+  if (score === 2) {
+    proximityNote = '<div class="feedback-proximity">' + S.selected + ' is a secondary emotion in EFT. The primary underneath is ' + primary + '.</div>';
+  } else if (score === 1) {
+    proximityNote = '<div class="feedback-proximity">You picked ' + S.selected + '. That does not quite fit. The primary emotion is ' + primary + '.</div>';
+  } else if (score === 0) {
+    proximityNote = '<div class="feedback-proximity">You picked ' + S.selected + '. The primary emotion is ' + primary + '.</div>';
+  }
+
+  var errorHtml = (score < 2 && s.common_error)
+    ? '<div class="common-error-callout"><strong>Clinical note</strong>' + s.common_error + '</div>'
+    : '';
+
+  div.innerHTML = '<div class="feedback-icon">' + m.icon + '</div>'
+    + '<div class="feedback-text">' + m.text + '</div>'
+    + proximityNote
+    + errorHtml;
+  V('feedback-card');
+}
+
+function fbL2(data, s) {
+  var div = document.getElementById('feedback-card');
+  var sc = typeof data.score === 'number' ? data.score : 0;
+  div.className = 'feedback-card ' + (sc === 3 ? 'correct' : sc === 2 ? 'partial' : 'incorrect');
+  var pc = sc === 3 ? 'lit-green' : sc === 2 ? 'lit-gold' : 'lit-red';
+  var pips = '';
+  for (var i = 0; i < 3; i++) pips += '<div class="pip ' + (i < sc ? pc : '') + '"></div>';
+  var sum = data.summary ? '<div class="feedback-summary">' + data.summary + '</div>' : '';
+  var det = '';
+  if (sc < 3) {
+    var rows = '';
+    if (data.what_worked)    rows += '<div class="feedback-detail-row"><span class="feedback-detail-label">What worked</span><span class="feedback-detail-text">' + data.what_worked + '</span></div>';
+    if (data.what_to_improve) rows += '<div class="feedback-detail-row"><span class="feedback-detail-label">To improve</span><span class="feedback-detail-text">' + data.what_to_improve + '</span></div>';
+    if (rows) det = '<div class="feedback-detail">' + rows + '</div>';
+  }
+  var gold = '';
+  if (sc <= 1 && s.correct_label_example) gold = '<div class="gold-standard-box"><span class="gs-label">Example of a strong response</span><span class="gs-text">' + s.correct_label_example + '</span></div>';
+  div.innerHTML = '<div class="score-header"><span class="score-number">' + sc + '</span><span class="score-denom">/3</span><div class="score-pips">' + pips + '</div></div>' + sum + det + gold;
+  V('feedback-card');
+}
+
+function endL1(passed) {
+  H('stimulus-card','next-row','feedback-card');
+  loading('Saving\u2026');
+  fetch(BASE + '/score-drill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      trainee_id: S.traineeId, skill_name: S.skillName, level: S.level,
+      drills_attempted: S.attempted, drills_correct: S.correct,
+      progress_page_id: S.progressPageId, gate_threshold: S.gateThreshold
+    })
+  })
+  .catch(function(e) { dbg('end err', e.message); })
+  .then(function() { doneLoading(); summary(passed); });
+}
+
+function nextDrill() { H('feedback-card','next-row'); nextStim(); }
+
+function bailout() {
+  H('stimulus-card','next-row','feedback-card');
+  var c = document.getElementById('bailout-card');
+  c.className = 'bailout-card';
+  c.innerHTML = '<h3>Let\'s take a step back</h3><p>You\'ve had ' + S.bailoutLimit + ' responses below 2/3 in a row. It might help to review the skill before continuing.</p><div class="bailout-actions"><button class="btn btn-primary" onclick="retryLevel()">Try again</button><button class="btn btn-ghost" onclick="resetToL1()">Reset to L1</button><button class="btn btn-ghost" onclick="resetSession()">Change setup</button></div>';
+  V('bailout-card');
+}
+
+function summary(passed) {
+  var l = S.level;
+  H('stimulus-card','next-row','feedback-card','bailout-card');
+  var c = document.getElementById('summary-card'), nxt = l + 1;
+  if (passed) {
+    var scoreVal = l === 1 ? S.correct : S.streak;
+    var scoreLabel = l === 1 ? 'correct' : 'in a row';
+    var comingSoon = nxt > 4 ? ' Level ' + nxt + ' is coming soon.' : '';
+    var resetBtn = l > 1 ? '<button class="btn btn-ghost btn-sm" onclick="resetToL1()">Reset to L1</button>' : '';
+    c.innerHTML = '<h3>\ud83c\udf93 Level ' + l + ' done</h3>'
+      + '<div class="summary-score">' + scoreVal + '<span> ' + scoreLabel + '</span></div>'
+      + '<p>You\'re through to Level ' + nxt + '.' + comingSoon + '</p>'
+      + '<div class="summary-actions">'
+        + '<button class="btn btn-primary" onclick="advLevel(' + nxt + ')">On to Level ' + nxt + '</button>'
+        + '<button class="btn btn-ghost" onclick="retryLevel()">Stay on Level ' + l + '</button>'
+        + resetBtn
+      + '</div>';
+  } else {
+    var scoreVal2 = l === 1 ? S.correct : S.streak;
+    var denom = l === 1 ? getReq() : S.streakTarget;
+    var msg = l === 1
+      ? 'You got ' + S.correct + ' right \u2014 you need ' + (getReq() - S.correct) + ' more to move up.'
+      : 'You got a streak of ' + S.streak + ' \u2014 you need ' + S.streakTarget + ' in a row to move up.';
+    c.innerHTML = '<h3>Round complete</h3>'
+      + '<div class="summary-score">' + scoreVal2 + '<span>/' + denom + '</span></div>'
+      + '<p>' + msg + ' Want another go?</p>'
+      + '<div class="summary-actions">'
+        + '<button class="btn btn-primary" onclick="retryLevel()">Try again</button>'
+        + '<button class="btn btn-ghost" onclick="resetSession()">Change setup</button>'
+      + '</div>';
+  }
+  V('summary-card');
+}
+
+function setLevel(n, callback) {
+  fetch(SET_LEVEL_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ trainee_id: S.traineeId, skill_name: S.skillName, level: n, reset_drills: true })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) { dbg('set-level', d); if (callback) callback(); })
+  .catch(function(e) { dbg('set-level err', e.message); if (callback) callback(); });
+}
+
+function advLevel(n) {
+  document.getElementById('level').value = String(n);
+  S.level = n; S.attempted = 0; S.correct = 0; S.streak = 0; S.fails = 0;
+  H('summary-card'); onLevelChange();
+  if (n === 4) { startSimulation(); return; }
+  if (n === 2) { startComparative(); return; }
+  setLevel(n, fetchStimuli);
+}
+
+function retryLevel() {
+  S.attempted = 0; S.correct = 0; S.streak = 0; S.fails = 0;
+  H('summary-card','bailout-card');
+  if (S.level === 1) { S.queue = spread(S.stimuli, S.stimuli.length); updateProg(); nextStim(); }
+  else fetchStimuli();
+}
+
+function resetToL1() {
+  S.level = 1; document.getElementById('level').value = '1';
+  S.attempted = 0; S.correct = 0; S.streak = 0; S.fails = 0; S.stimuli = []; S.queue = [];
+  H('summary-card','bailout-card'); onLevelChange();
+  setLevel(1, fetchStimuli);
+}
+
+function resetSession() {
+  S.attempted = 0; S.correct = 0; S.streak = 0; S.fails = 0; S.stimuli = []; S.queue = [];
+  EMOTIONS = EFT_PRIMARY;
+  document.getElementById('start-btn').disabled = false;
+  expandConfig();
+  H('stimulus-card','feedback-card','next-row','progress-card','summary-card','error-box','examples-panel','bailout-card','streak-row','client-card');
+  document.getElementById('header-progress').textContent = '';
+  document.getElementById('debug-panel').textContent = '';
+  teardownSim();
+  teardownComparative();
+}
+
+function loadPacks(skillName) {
+  var skill = skillName || document.getElementById('skill-name').value || 'Empathic Reflection';
+  fetch(LIST_PACKS_URL + '?skill_name=' + encodeURIComponent(skill))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var packs = d.packs || [];
+      var sel = document.getElementById('pack-select');
+      if (!sel) return;
+      while (sel.options.length > 1) sel.remove(1);
+      packs.forEach(function(p) {
+        PACK_REGISTRY[p.pack_page_id] = p;
+        var opt = document.createElement('option');
+        opt.value = p.pack_page_id;
+        var diffLabel = p.pack_difficulty ? ' [' + p.pack_difficulty + ']' : '';
+        opt.textContent = p.client_name + diffLabel;
+        sel.appendChild(opt);
+      });
+      // Auto-select first pack for L2 if no-pack option is hidden
+      var level = parseInt(document.getElementById('level').value);
+      if (level === 2 && sel.options.length > 1) sel.selectedIndex = 1;
+    })
+    .catch(function(e) { console.warn('loadPacks failed:', e.message); });
+}
+function onSkillChange() {
+  var skill = document.getElementById('skill-name').value;
+  loadPacks(skill);
+  updateLevelDescription();
+}
+function updateLevelDescription() {
+  var rawVal = document.getElementById('level').value;
+  var l = rawVal === '3b' ? '3b' : parseInt(rawVal);
+  var skill = document.getElementById('skill-name').value;
+  var DESCS = {
+    'Empathic Reflection': {
+      1: 'Identify the primary emotion in a client fragment. Builds the foundation for all reflection work \u2014 you cannot reflect what you have not first accurately named.',
+      3: 'Write your own Empathic Reflection. AI scores for emotional precision and attunement. The step where you stop recognising good responses and start producing them. Gate: 3 consecutive responses scored 2+ out of 3.',
+      '3b': 'You are shown a failed Empathic Reflection and the client\u2019s reaction to it. Write the repair: acknowledge the miss without self-justification, re-reflect with more precision, invite correction. Gate: 3 consecutive scored 2+ out of 3.'
+    },
+    'Emotional Validation': {
+      1: 'Identify the primary emotion in a client fragment. Same format as Empathic Reflection L1 \u2014 if you have already passed that level, you can skip straight to L2.',
+      3: 'Write your own Emotional Validation. AI scores for contextualisation, specificity, and absence of pivot. If you have done Empathic Reflection L3, note: a response that scores 3 there scores 1 here. Reflecting the emotion is not enough \u2014 you need to show it makes sense. Gate: 3 consecutive responses scored 2+ out of 3.',
+      '3b': 'You are shown a failed validation attempt and the client\u2019s reaction to it. Write the repair: acknowledge the miss without self-justification, re-validate with specificity, invite correction. Gate: 3 consecutive responses scored 2+ out of 3.'
+    }
+  };
+  var skillDescs = DESCS[skill] || DESCS['Empathic Reflection'];
+  var text = skillDescs[l] || '';
+  var L2_DESCS = {
+    'Empathic Reflection': 'Three therapist responses to the same client moment. Choose the best Empathic Reflection. Trains you to distinguish attuned language from clinical distance and generic labelling. Gate: 6 out of 8 correct.',
+    'Emotional Validation': 'Three therapist responses to the same client moment. Choose the best Emotional Validation. The critical discrimination: genuine contextualisation vs reassurance vs generic empathy \u2014 responses that feel similar but land very differently. Gate: 6 out of 8 correct.'
+  };
+  var l2desc = document.getElementById('l2-comp-description');
+  if (l2desc) l2desc.textContent = L2_DESCS[skill] || L2_DESCS['Empathic Reflection'];
+  var el = document.getElementById('level-description');
+  var textEl = document.getElementById('level-description-text');
+  if (text) {
+    textEl.textContent = text;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+window.addEventListener('DOMContentLoaded', function() { loadPacks(); updateLevelDescription(); });
+// ── Client card (drill pack) ──────────────────────────────────────────────────
+
+function renderClientCard() {
+  var pack = S.pack;
+  var card = document.getElementById('client-card');
+  if (!pack || !pack.client_name) {
+    card.classList.add('hidden');
+    return;
+  }
+  document.getElementById('client-card-name').textContent = pack.client_name;
+  var issueEl = document.getElementById('client-card-issue');
+  issueEl.textContent = pack.client_presenting_issue || '';
+  issueEl.style.display = pack.client_presenting_issue ? 'block' : 'none';
+  document.getElementById('client-card-background').textContent = pack.client_background || '';
+  var defenceEl = document.getElementById('client-card-defence');
+  if (pack.client_defence_style) {
+    defenceEl.textContent = pack.client_defence_style;
+    defenceEl.style.display = 'inline-flex';
+  } else {
+    defenceEl.style.display = 'none';
+  }
+  // Show expanded by default at start of round
+  document.getElementById('client-card-body').style.display = 'block';
+  document.getElementById('client-card-toggle').textContent = 'Hide \u2191';
+  card.classList.remove('hidden');
+}
+
+function toggleClientCard() {
+  var body = document.getElementById('client-card-body');
+  var toggle = document.getElementById('client-card-toggle');
+  var expanded = body.style.display !== 'none';
+  body.style.display = expanded ? 'none' : 'block';
+  toggle.textContent = expanded ? 'Show \u2193' : 'Hide \u2191';
+}
+
+// ── Simulation helpers ────────────────────────────────────────────────────────
+
+function hideSim() {
+  document.getElementById('sim-area').style.display = 'none';
+  if (SIM.timerInterval) { clearInterval(SIM.timerInterval); SIM.timerInterval = null; }
+}
+
+function teardownSim() {
+  hideSim();
+  SIM.sessionId = null; SIM.personaName = null; SIM.ended = false; SIM.sending = false;
+  document.getElementById('drill-area').style.display = '';
+}
+
+function showSimArea() {
+  document.getElementById('drill-area').style.display = 'none';
+  document.getElementById('sim-area').style.display = '';
+}
+
+function appendChatBubble(role, text) {
+  var win = document.getElementById('chat-window');
+  var turn = document.createElement('div');
+  turn.className = 'chat-turn';
+  var label = role === 'client' ? (SIM.personaName || 'Client') : role === 'system' ? '' : 'You';
+  if (role !== 'system') {
+    var lbl = document.createElement('div');
+    lbl.className = 'chat-turn-label';
+    lbl.textContent = label;
+    turn.appendChild(lbl);
+  }
+  var bubble = document.createElement('div');
+  bubble.className = 'chat-bubble ' + role;
+  bubble.textContent = text;
+  turn.appendChild(bubble);
+  win.appendChild(turn);
+  win.scrollTop = win.scrollHeight;
+  return turn;
+}
+
+function showTyping() {
+  var win = document.getElementById('chat-window');
+  var el = document.createElement('div');
+  el.id = 'typing-indicator';
+  el.className = 'chat-turn';
+  var lbl = document.createElement('div');
+  lbl.className = 'chat-turn-label';
+  lbl.textContent = SIM.personaName || 'Client';
+  var bubble = document.createElement('div');
+  bubble.className = 'chat-bubble client chat-typing';
+  bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  el.appendChild(lbl); el.appendChild(bubble);
+  win.appendChild(el);
+  win.scrollTop = win.scrollHeight;
+}
+
+function hideTyping() {
+  var el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function startTimer() {
+  SIM.startTime = Date.now();
+  var timerEl = document.getElementById('sim-timer');
+  SIM.timerInterval = setInterval(function() {
+    var elapsed = Math.floor((Date.now() - SIM.startTime) / 1000);
+    var remaining = Math.max(0, SIM.maxMinutes * 60 - elapsed);
+    var m = Math.floor(remaining / 60), s = remaining % 60;
+    timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    timerEl.classList.toggle('urgent', remaining <= 60);
+  }, 1000);
+}
+
+function updateGateProgress(consecutive) {
+  var el = document.getElementById('sim-gate-progress');
+  if (el) el.textContent = consecutive + '/3 gate sessions';
+}
+
+// ── Start Simulation ──────────────────────────────────────────────────────────
+
+function startSimulation() {
+  SIM.traineeId = S.traineeId;
+  SIM.maxMinutes = SIM.selectedDuration || 2;
+  SIM.ended = false; SIM.sending = false;
+  document.getElementById('chat-window').innerHTML = '';
+  document.getElementById('eval-card').style.display = 'none';
+  document.getElementById('eval-loading').style.display = 'none';
+  document.getElementById('sim-actions').style.display = 'none';
+  document.getElementById('sim-input-area').style.display = '';
+  document.getElementById('sim-textarea').value = '';
+  document.getElementById('sim-send-btn').disabled = true;
+  document.getElementById('sim-persona-name').textContent = 'Connecting…';
+  document.getElementById('sim-skill-name').textContent = S.skillName;
+  document.getElementById('sim-timer').textContent = '—:—';
+  document.getElementById('sim-gate-progress').textContent = '';
+  showSimArea();
+  document.getElementById('header-progress').textContent = 'L3 · Session';
+
+  fetch(START_SIM_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      batch_skill_name: S.skillName,
+      therapist: { firstName: S.traineeId, email: S.traineeId + '@therapygym.local' },
+      training: { presentingIssue: 'Random', isRandomIssue: true },
+      meta: { source: 'drill-ui', formId: 'drill-ui', submissionId: Date.now().toString() },
+      maxDurationMinutes: SIM.maxMinutes
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var data = Array.isArray(d) ? d[0] : d;
+    dbg('sim-start', data);
+    SIM.sessionId = data.session_id;
+    SIM.personaName = data.persona_name;
+    SIM.maxMinutes = data.max_duration_minutes || 10;
+    document.getElementById('sim-persona-name').textContent = SIM.personaName;
+    appendChatBubble('client', data.client_opening);
+    startTimer();
+  })
+  .catch(function(e) {
+    dbg('sim-start err', e.message);
+    appendChatBubble('system', '⚠ Could not connect: ' + e.message);
+  });
+}
+
+// ── Send Turn ─────────────────────────────────────────────────────────────────
+
+function onSimInput() {
+  document.getElementById('sim-send-btn').disabled =
+    document.getElementById('sim-textarea').value.trim().length < 2;
+}
+
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    // L1/L2 submit
+    var sb = document.getElementById('submit-btn');
+    if (sb && !sb.disabled && document.getElementById('drill-area').style.display !== 'none') { sb.click(); return; }
+    // L3 send
+    var ssb = document.getElementById('sim-send-btn');
+    if (ssb && !ssb.disabled) ssb.click();
+  }
+});
+
+function sendTurn() {
+  if (SIM.sending || SIM.ended || !SIM.sessionId) return;
+  var txt = document.getElementById('sim-textarea').value.trim();
+  if (!txt) return;
+  SIM.sending = true;
+  document.getElementById('sim-send-btn').disabled = true;
+  document.getElementById('sim-textarea').value = '';
+  document.getElementById('sim-textarea').disabled = true;
+
+  appendChatBubble('therapist', txt);
+  showTyping();
+
+  fetch(CHAT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: SIM.sessionId, therapist_message: txt })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var data = Array.isArray(d) ? d[0] : d;
+    dbg('sim-turn', data);
+    hideTyping();
+    appendChatBubble('client', data.client_reply);
+    document.getElementById('header-progress').textContent = 'L3 · Turn ' + data.turn_count;
+    SIM.sending = false;
+
+    if (data.session_ended) {
+      endSim(data.end_reason);
+    } else {
+      document.getElementById('sim-textarea').disabled = false;
+      document.getElementById('sim-textarea').focus();
+      onSimInput();
+    }
+  })
+  .catch(function(e) {
+    hideTyping();
+    dbg('sim-turn err', e.message);
+    appendChatBubble('system', '⚠ Error: ' + e.message);
+    SIM.sending = false;
+    document.getElementById('sim-textarea').disabled = false;
+    onSimInput();
+  });
+}
+
+function endSimEarly() {
+  if (SIM.ended) return;
+  endSim('manual');
+}
+
+function endSim(reason) {
+  SIM.ended = true;
+  if (SIM.timerInterval) { clearInterval(SIM.timerInterval); SIM.timerInterval = null; }
+  document.getElementById('sim-input-area').style.display = 'none';
+  if (reason === 'timeout') {
+    appendChatBubble('system', 'Session time limit reached.');
+  } else if (reason === 'client_ended') {
+    appendChatBubble('system', 'The client ended the session.');
+  } else if (reason === 'manual') {
+    appendChatBubble('system', 'Session ended.');
+  }
+  document.getElementById('header-progress').textContent = 'L3 · Evaluating…';
+  requestEval();
+}
+
+// ── Evaluation ────────────────────────────────────────────────────────────────
+
+function requestEval() {
+  document.getElementById('eval-loading').style.display = 'block';
+  fetch(EVAL_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: SIM.sessionId, trainee_id: SIM.traineeId })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var data = Array.isArray(d) ? d[0] : d;
+    dbg('eval', data);
+    document.getElementById('eval-loading').style.display = 'none';
+    showEvalResult(data);
+  })
+  .catch(function(e) {
+    dbg('eval err', e.message);
+    document.getElementById('eval-loading').style.display = 'none';
+    document.getElementById('eval-card').style.display = 'block';
+    document.getElementById('eval-card').innerHTML = '<div class="eval-card"><p style="color:var(--danger);font-size:0.88rem;">\u26a0 Evaluation failed: ' + e.message + '</p></div>';
+    showSimPostActions(false, false);
+  });
+}
+
+function showEvalResult(data) {
+  var score = data.session_score !== null && data.session_score !== undefined ? data.session_score : '—';
+  var gateMet = data.gate_met;
+  var consecutive = data.consecutive_gate_sessions || 0;
+  var levelAdvanced = data.level_advanced || false;
+
+  var gateHtml = gateMet
+    ? '<span class="eval-gate met">\u2713 Gate met</span>'
+    : '<span class="eval-gate not-met">Gate not met</span>';
+  var consHtml = '<span class="eval-consecutive">' + consecutive + '/3 consecutive</span>';
+
+  var summaryHtml = data.summary
+    ? '<div class="eval-summary">' + escHtml(data.summary) + '</div>'
+    : '';
+
+  var highlightHtml = '';
+  if (data.highlight) {
+    highlightHtml = '<div class="eval-section">'
+      + '<span class="eval-section-label">Highlight — turn ' + (data.highlight.turn_number || '?') + '</span>'
+      + '<div class="eval-section-text">' + escHtml(data.highlight.why || '') + '</div>'
+      + (data.highlight.therapist_text ? '<div class="eval-quote">' + escHtml(data.highlight.therapist_text) + '</div>' : '')
+      + '</div>';
+  }
+
+  var missedHtml = '';
+  if (data.missed) {
+    missedHtml = '<div class="eval-section">'
+      + '<span class="eval-section-label">Missed opportunity — turn ' + (data.missed.turn_number || '?') + '</span>'
+      + (data.missed.client_text ? '<div class="eval-quote" style="margin-bottom:0.4rem;">' + escHtml(data.missed.client_text) + '</div>' : '')
+      + '<div class="eval-section-text">' + escHtml(data.missed.suggestion || '') + '</div>'
+      + '</div>';
+  }
+
+  var advanceHtml = levelAdvanced
+    ? '<div class="eval-level-advance">\ud83c\udf93 Gate passed \u2014 you\'ve advanced to Level 4.</div>'
+    : '';
+
+  var html = '<div class="eval-card">'
+    + '<div class="eval-score-row"><span class="eval-score-num">' + score + '</span><span class="eval-score-denom">/10</span>' + gateHtml + consHtml + '</div>'
+    + summaryHtml + highlightHtml + missedHtml + advanceHtml
+    + '</div>';
+
+  document.getElementById('eval-card').innerHTML = html;
+  document.getElementById('eval-card').style.display = 'block';
+  document.getElementById('header-progress').textContent = 'L3 · Score ' + score + '/10';
+
+  showSimPostActions(gateMet, levelAdvanced);
+}
+
+function showSimPostActions(gateMet, levelAdvanced) {
+  var acts = document.getElementById('sim-actions');
+  var html = '<button class="btn btn-primary" onclick="startSimulation()">New Session</button>'
+    + '<button class="btn btn-ghost" onclick="resetSession()">Change Setup</button>';
+  if (levelAdvanced) {
+    html = '<button class="btn btn-primary" onclick="advLevel(5)">On to Level 5</button>' + html;
+  }
+  acts.innerHTML = html;
+  acts.style.display = 'flex';
+}
+
+// ── Comparative (Level 2) ─────────────────────────────────────────────────────
+
+var COMP = { drills: [], current: 0, attempted: 0, correct: 0, selectedIdx: null, revealed: false, gateReq: 6, gateTotal: 8 };
+
+function buildCompDrillsFromStimuli(stimuli) {
+  var withOptions = stimuli.filter(function(s) {
+    return s.comparative_options && s.comparative_options.length === 3;
+  });
+  return shuffle(withOptions.map(function(s) {
+    var opts = shuffle(s.comparative_options.slice()).map(function(o, i) {
+      return {
+        letter: ['A','B','C'][i],
+        text: o.response_text || '',
+        quality: (o.quality || '').toLowerCase(),
+        badge: o.quality === 'Best' ? 'Best response' : o.quality === 'Mid' ? 'Close, but' : 'Misses the mark',
+        explanation: o.explanation || ''
+      };
+    });
+    return { context: s.context || '', stimulus: s.stimulus_text || '', options: opts };
+  }));
+}
+
+function startComparative() {
+  COMP.current = 0; COMP.attempted = 0; COMP.correct = 0; COMP.drills = [];
+  document.getElementById('comp-area').style.display = '';
+  document.getElementById('drill-area').style.display = 'none';
+  document.getElementById('comp-summary-card').className = 'summary-card hidden';
+  document.getElementById('comp-action-row').style.display = 'flex';
+  document.getElementById('comp-drill-wrap').innerHTML = '<div id="loading" style="display:flex;flex-direction:column;align-items:center;gap:0.7rem;padding:2.5rem;color:var(--muted);font-size:0.9rem;"><div class="spinner"></div><span>Loading drills\u2026</span></div>';
+  document.getElementById('header-progress').textContent = 'L2 \u00b7 Loading\u2026';
+
+  fetch(BASE + '/start-drill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ trainee_id: S.traineeId, skill_name: S.skillName, level: S.level, activity_type: 'Comparative' }, S.packId ? { pack_id: S.packId } : {}))
+  })
+  .then(function(r) { return r.text().then(function(t) {
+    if (!r.ok) throw new Error('Server ' + r.status + ': ' + t);
+    var p; try { p = JSON.parse(t); } catch(e) { throw new Error('Bad JSON: ' + t.substring(0, 200)); }
+    var d = Array.isArray(p) ? p[0] : p;
+    S.progressPageId = d.progress_page_id;
+    S.gateThreshold = d.gate_threshold || '6/8';
+    S.pack = d.pack || null;
+    if (!d.stimuli || !d.stimuli.length) throw new Error('No stimuli returned.');
+    COMP.drills = buildCompDrillsFromStimuli(d.stimuli);
+    if (!COMP.drills.length) throw new Error('No stimuli with comparative options found.');
+    COMP.gateTotal = Math.min(8, COMP.drills.length);
+    renderClientCard();
+    document.getElementById('comp-drill-wrap').innerHTML = '';
+    compLoadDrill(0);
+    document.getElementById('header-progress').textContent = 'L2 \u00b7 0 correct';
+  }); })
+  .catch(function(e) {
+    document.getElementById('comp-drill-wrap').innerHTML = '<div class="error-msg">\u26a0 ' + e.message + '</div>';
+    document.getElementById('start-btn').disabled = false;
+  });
+}
+
+function compLoadDrill(idx) {
+  COMP.selectedIdx = null; COMP.revealed = false;
+  var d = COMP.drills[idx];
+  var wrap = document.getElementById('comp-drill-wrap');
+  wrap.innerHTML = '<div class="comp-stimulus">'
+    + '<div class="stimulus-label">Client Fragment</div>'
+    + (d.context ? '<div class="stimulus-context">' + escHtml(d.context) + '</div>' : '')
+    + '<div class="stimulus-text">' + escHtml(d.stimulus) + '</div>'
+    + '</div>'
+    + '<div class="comp-instruction">Which response would best serve this client?</div>'
+    + '<div class="comp-options" id="comp-opts"></div>';
+  var optsEl = document.getElementById('comp-opts');
+  d.options.forEach(function(opt, i) {
+    var card = document.createElement('div');
+    card.className = 'comp-option';
+    card.dataset.idx = i;
+    card.onclick = function() { compSelect(i); };
+    card.innerHTML = '<div class="comp-option-header">'
+      + '<div class="comp-letter">' + escHtml(opt.letter) + '</div>'
+      + '<div class="comp-response-text">' + escHtml(opt.text) + '</div>'
+      + '</div>'
+      + '<div class="comp-reveal-body" id="comp-rev-' + i + '">'
+      + '<span class="comp-quality-badge comp-badge-' + opt.quality + '">' + escHtml(opt.badge) + '</span>'
+      + '<div class="comp-explanation">' + escHtml(opt.explanation) + '</div>'
+      + '</div>';
+    optsEl.appendChild(card);
+  });
+  document.getElementById('comp-reveal-btn').disabled = true;
+  document.getElementById('comp-reveal-btn').style.display = '';
+  document.getElementById('comp-next-btn').style.display = 'none';
+  document.getElementById('comp-pick-note').textContent = '';
+  compUpdateProg();
+}
+
+function compSelect(i) {
+  if (COMP.revealed) return;
+  COMP.selectedIdx = i;
+  document.querySelectorAll('.comp-option').forEach(function(c, j) { c.classList.toggle('comp-selected', j === i); });
+  document.getElementById('comp-reveal-btn').disabled = false;
+}
+
+function compReveal() {
+  if (COMP.revealed) return;
+  COMP.revealed = true;
+  COMP.attempted++;
+  var d = COMP.drills[COMP.current];
+  var selOpt = COMP.selectedIdx !== null ? d.options[COMP.selectedIdx] : null;
+  if (selOpt && selOpt.quality === 'best') COMP.correct++;
+  // Lock all cards and reveal all simultaneously
+  document.querySelectorAll('.comp-option').forEach(function(c, i) {
+    c.classList.add('comp-locked');
+    c.onclick = null;
+    c.classList.add('comp-revealed-' + d.options[i].quality);
+  });
+  // Pick note
+  if (selOpt) {
+    var notes = { best: 'You picked the best response \u2714', mid: 'You picked the close response', weak: 'You picked the weaker response' };
+    document.getElementById('comp-pick-note').textContent = notes[selOpt.quality] || '';
+  }
+  document.getElementById('comp-reveal-btn').style.display = 'none';
+  document.getElementById('comp-next-btn').style.display = '';
+  compUpdateProg();
+  if (COMP.correct >= COMP.gateReq) { setTimeout(function() { compSummary(true); }, 500); }
+}
+
+function compSkip() { if (!COMP.revealed) compReveal(); else compNext(); }
+
+function compNext() {
+  COMP.current++;
+  if (COMP.current >= COMP.gateTotal) { compSummary(COMP.correct >= COMP.gateReq); return; }
+  compLoadDrill(COMP.current);
+}
+
+function compUpdateProg() {
+  var req = COMP.gateReq, total = COMP.gateTotal;
+  document.getElementById('comp-prog-fraction').textContent = COMP.correct + ' / ' + req;
+  document.getElementById('comp-prog-fill').style.width = Math.min(100, Math.round(COMP.correct / req * 100)) + '%';
+  document.getElementById('comp-stat-correct').textContent = COMP.correct;
+  document.getElementById('comp-stat-attempted').textContent = COMP.attempted;
+  document.getElementById('comp-stat-remaining').textContent = Math.max(0, total - COMP.attempted);
+  document.getElementById('header-progress').textContent = 'L2 \u00b7 ' + COMP.correct + '/' + req + ' correct';
+}
+
+function compSummary(passed) {
+  document.getElementById('comp-drill-wrap').innerHTML = '';
+  document.getElementById('comp-action-row').style.display = 'none';
+  var c = document.getElementById('comp-summary-card');
+  if (passed) {
+    c.innerHTML = '<h3>\ud83c\udf93 Level 2 passed</h3>'
+      + '<div class="summary-score">' + COMP.correct + '<span> / ' + COMP.gateReq + '</span></div>'
+      + '<p>You identified the best response in ' + COMP.correct + ' of ' + COMP.attempted + ' drills. Ready for Level 3.</p>'
+      + '<div class="summary-actions"><button class="btn btn-primary" onclick="compAdvance()">On to Level 3</button>'
+      + '<button class="btn btn-ghost" onclick="compRetry()">Try again</button></div>';
+  } else {
+    c.innerHTML = '<h3>Round complete</h3>'
+      + '<div class="summary-score">' + COMP.correct + '<span> / ' + COMP.gateReq + '</span></div>'
+      + '<p>You need ' + COMP.gateReq + ' correct to pass. Want another go?</p>'
+      + '<div class="summary-actions"><button class="btn btn-primary" onclick="compRetry()">Try again</button>'
+      + '<button class="btn btn-ghost" onclick="resetSession()">Change setup</button></div>';
+  }
+  c.className = 'summary-card';
+}
+
+function compRetry() {
+  document.getElementById('comp-action-row').style.display = 'flex';
+  document.getElementById('comp-summary-card').className = 'summary-card hidden';
+  COMP.current = 0; COMP.attempted = 0; COMP.correct = 0;
+  // Reshuffle drills and options from already-fetched data
+  COMP.drills = shuffle(COMP.drills.map(function(d) {
+    var opts = shuffle(d.options.slice()).map(function(o, i) { return Object.assign({}, o, { letter: ['A','B','C'][i] }); });
+    return { context: d.context, stimulus: d.stimulus, options: opts };
+  }));
+  compLoadDrill(0);
+}
+
+function compAdvance() {
+  document.getElementById('level').value = '3';
+  S.level = 3; teardownComparative(); fetchStimuli();
+}
+
+function teardownComparative() {
+  document.getElementById('comp-area').style.display = 'none';
+  document.getElementById('drill-area').style.display = '';
+  document.getElementById('comp-drill-wrap').innerHTML = '';
+  document.getElementById('comp-action-row').style.display = 'flex';
+  document.getElementById('comp-summary-card').className = 'summary-card hidden';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+<!-- Level 2 Comparative UI -->
+<div id="comp-area" style="display:none;width:100%;max-width:680px;">
+  <div class="comp-progress-card">
+    <div class="progress-header"><span class="progress-label">Comparative &mdash; Gate Progress</span><span class="progress-fraction" id="comp-prog-fraction">0 / 6</span></div>
+    <div class="progress-track"><div class="progress-fill" id="comp-prog-fill" style="width:0%"></div></div>
+    <div class="stats-row" style="margin-top:0.5rem;">
+      <div class="stat"><span class="stat-val" id="comp-stat-correct">0</span><span class="stat-label">Correct</span></div>
+      <div class="stat"><span class="stat-val" id="comp-stat-attempted">0</span><span class="stat-label">Attempted</span></div>
+      <div class="stat"><span class="stat-val" id="comp-stat-remaining">8</span><span class="stat-label">Remaining</span></div>
+    </div>
+  </div>
+  <div id="comp-drill-wrap"></div>
+  <div class="comp-action-row" id="comp-action-row">
+    <button class="btn btn-primary btn-sm" id="comp-reveal-btn" onclick="compReveal()" disabled>See explanations</button>
+    <button class="btn btn-ghost btn-sm" id="comp-next-btn" onclick="compNext()" style="display:none;">Next drill</button>
+    <span class="comp-pick-note" id="comp-pick-note"></span>
+    <button class="btn btn-ghost btn-sm" onclick="compSkip()" style="margin-left:auto;font-size:0.72rem;padding:0.45rem 0.8rem;">Skip</button>
+  </div>
+  <div class="summary-card hidden" id="comp-summary-card"></div>
+</div>
+
+</div><!-- end #app-wrap -->
+
+<script>
+var VALIDATE_URL = 'https://therapygym.app.n8n.cloud/webhook/validate-trainee';
+var LOGGED_IN_TRAINEE = null;
+var LOGGED_IN_NAME = null;
+
+function doLogin() {
+  var input = document.getElementById('login-id-input');
+  var btn = document.getElementById('login-btn');
+  var errEl = document.getElementById('login-error');
+  var val = input.value.trim();
+  if (!val) { errEl.textContent = 'Please enter your Trainee ID.'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  errEl.textContent = '';
+  fetch(VALIDATE_URL + '?trainee_id=' + encodeURIComponent(val))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.valid) {
+        LOGGED_IN_TRAINEE = val;
+        LOGGED_IN_NAME = data.name || val;
+        sessionStorage.setItem('ks_trainee_id', val);
+        sessionStorage.setItem('ks_trainee_name', LOGGED_IN_NAME);
+        showApp();
+      } else {
+        errEl.textContent = 'ID not recognised. Please check with your trainer.';
+        btn.disabled = false;
+        btn.textContent = 'Enter';
+        input.focus();
+      }
+    })
+    .catch(function() {
+      errEl.textContent = 'Could not connect. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Enter';
+    });
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  var app = document.getElementById('app-wrap');
+  app.style.display = 'flex';
+  // Set trainee ID in state and field
+  S.traineeId = LOGGED_IN_TRAINEE;
+  var idField = document.getElementById('trainee-id');
+  if (idField) idField.value = LOGGED_IN_TRAINEE;
+  // Update user badge
+  var badge = document.getElementById('user-badge');
+  if (badge) badge.textContent = LOGGED_IN_NAME + ' \u00b7 log out';
+  // Load packs
+  if (typeof loadPacks === 'function') loadPacks();
+  if (typeof updateLevelDescription === 'function') updateLevelDescription();
+}
+
+function logOut() {
+  if (!confirm('Log out?')) return;
+  sessionStorage.removeItem('ks_trainee_id');
+  sessionStorage.removeItem('ks_trainee_name');
+  LOGGED_IN_TRAINEE = null;
+  LOGGED_IN_NAME = null;
+  document.getElementById('app-wrap').style.display = 'none';
+  var ls = document.getElementById('login-screen');
+  ls.classList.remove('hidden');
+  document.getElementById('login-id-input').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Enter';
+}
+
+// Auto-login if session present
+(function() {
+  var savedId = sessionStorage.getItem('ks_trainee_id');
+  var savedName = sessionStorage.getItem('ks_trainee_name');
+  if (savedId) {
+    LOGGED_IN_TRAINEE = savedId;
+    LOGGED_IN_NAME = savedName || savedId;
+    document.addEventListener('DOMContentLoaded', function() { showApp(); });
+  }
+})();
+</script>
+
+</body>
+</html>
