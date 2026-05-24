@@ -25,7 +25,6 @@
       --shadow-hover: 0 6px 16px rgba(184,149,106,0.15);
     }
     body { background: linear-gradient(135deg,#fef9f6 0%,#faf5f1 50%,#f5eff8 100%); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 400; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem 3rem; }
-    /* Login screen */
     #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg,#fef9f6 0%,#faf5f1 50%,#f5eff8 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
     #login-screen.hidden { display: none; }
     .login-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 22px; padding: 2.4rem 2.2rem; width: 100%; max-width: 400px; box-shadow: var(--shadow-card); text-align: center; }
@@ -39,8 +38,6 @@
     .login-btn { width: 100%; background: var(--accent-btn); color: var(--text); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; padding: 0.85rem; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; box-shadow: 0 4px 12px rgba(201,164,152,0.12); }
     .login-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
     .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .login-welcome { font-size: 0.82rem; color: var(--muted); margin-top: 1.2rem; }
-    /* User badge in header */
     #user-badge { font-size: 0.8rem; color: var(--muted); cursor: pointer; padding: 0.3rem 0.7rem; border-radius: 20px; border: 1px solid var(--border-light); background: rgba(255,255,255,0.5); transition: background 0.2s; }
     #user-badge:hover { background: rgba(255,255,255,0.8); }
     header { width: 100%; max-width: 680px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
@@ -254,7 +251,6 @@
 </head>
 <body>
 
-<!-- Login screen -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">KorSkills<span> / Drill</span></div>
@@ -266,7 +262,6 @@
   </div>
 </div>
 
-<!-- Main app -->
 <div id="app-wrap" style="display:none;width:100%;flex-direction:column;align-items:center;">
 <header>
   <div class="logo">KorSkills <span>/ Drill</span></div>
@@ -703,26 +698,29 @@ function renderStim(s) {
   if (ctx) { ctxEl.textContent = ctx; ctxEl.style.display = 'block'; }
   else { ctxEl.style.display = 'none'; }
 
-  document.getElementById('stimulus-text').textContent = s.stimulus_text || '(no text)';
+  var stimTextEl = document.getElementById('stimulus-text');
 
-  // Repair drill -- show miss and disaffiliation elements
+  // Repair drill -- correct order: setup (context) -> therapist miss -> client disaffiliation -> response box
+  // stimulus_text is not shown separately for L3b; miss block replaces it
   var repairMissEl = document.getElementById('repair-miss-block');
   if (S.level === '3b' && s.therapist_miss_text) {
+    stimTextEl.style.display = 'none';
     if (!repairMissEl) {
-      var stimCard = document.getElementById('stimulus-text');
       var missBlock = document.createElement('div');
       missBlock.id = 'repair-miss-block';
       missBlock.innerHTML = '<div class="repair-section-label">Therapist response (the miss)</div>'
         + '<div class="therapist-miss-text" id="therapist-miss-text"></div>'
-        + '<div class="repair-section-label">Client</div>'
+        + '<div class="repair-section-label">Client response</div>'
         + '<div class="client-disaffiliation-text" id="client-disaffiliation-text"></div>';
-      stimCard.parentNode.insertBefore(missBlock, stimCard.nextSibling);
+      stimTextEl.parentNode.insertBefore(missBlock, stimTextEl);
     }
     document.getElementById('therapist-miss-text').textContent = s.therapist_miss_text;
     document.getElementById('client-disaffiliation-text').textContent = s.client_disaffiliation_text || '';
     document.getElementById('repair-miss-block').style.display = 'block';
-  } else if (repairMissEl) {
-    repairMissEl.style.display = 'none';
+  } else {
+    stimTextEl.textContent = s.stimulus_text || '(no text)';
+    stimTextEl.style.display = 'block';
+    if (repairMissEl) repairMissEl.style.display = 'none';
   }
 
   if (S.level === 1) {
@@ -1655,14 +1653,11 @@ function showApp() {
   document.getElementById('login-screen').classList.add('hidden');
   var app = document.getElementById('app-wrap');
   app.style.display = 'flex';
-  // Set trainee ID in state and field
   S.traineeId = LOGGED_IN_TRAINEE;
   var idField = document.getElementById('trainee-id');
   if (idField) idField.value = LOGGED_IN_TRAINEE;
-  // Update user badge
   var badge = document.getElementById('user-badge');
   if (badge) badge.textContent = LOGGED_IN_NAME + ' \u00b7 log out';
-  // Load packs
   if (typeof loadPacks === 'function') loadPacks();
   if (typeof updateLevelDescription === 'function') updateLevelDescription();
 }
@@ -1682,7 +1677,6 @@ function logOut() {
   document.getElementById('login-btn').textContent = 'Enter';
 }
 
-// Auto-login if session present
 (function() {
   var savedId = sessionStorage.getItem('ks_trainee_id');
   var savedName = sessionStorage.getItem('ks_trainee_name');
