@@ -25,21 +25,6 @@
       --shadow-hover: 0 6px 16px rgba(184,149,106,0.15);
     }
     body { background: linear-gradient(135deg,#fef9f6 0%,#faf5f1 50%,#f5eff8 100%); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 400; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem 3rem; }
-    #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg,#fef9f6 0%,#faf5f1 50%,#f5eff8 100%); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
-    #login-screen.hidden { display: none; }
-    .login-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 22px; padding: 2.4rem 2.2rem; width: 100%; max-width: 400px; box-shadow: var(--shadow-card); text-align: center; }
-    .login-logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; letter-spacing: 0.02em; color: #6b5543; margin-bottom: 0.3rem; }
-    .login-logo span { color: var(--muted); font-weight: 400; }
-    .login-subtitle { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
-    .login-label { display: block; font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem; text-align: left; }
-    .login-input { width: 100%; background: rgba(255,255,255,0.7); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; padding: 0.7rem 0.9rem; outline: none; transition: border-color 0.2s; margin-bottom: 0.5rem; text-align: center; letter-spacing: 0.05em; }
-    .login-input:focus { border-color: var(--accent); }
-    .login-error { font-size: 0.82rem; color: var(--danger); min-height: 1.2rem; margin-bottom: 0.8rem; }
-    .login-btn { width: 100%; background: var(--accent-btn); color: var(--text); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; padding: 0.85rem; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; box-shadow: 0 4px 12px rgba(201,164,152,0.12); }
-    .login-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
-    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    #user-badge { font-size: 0.8rem; color: var(--muted); cursor: pointer; padding: 0.3rem 0.7rem; border-radius: 20px; border: 1px solid var(--border-light); background: rgba(255,255,255,0.5); transition: background 0.2s; }
-    #user-badge:hover { background: rgba(255,255,255,0.8); }
     header { width: 100%; max-width: 680px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.3rem; letter-spacing: 0.02em; color: #6b5543; }
     .logo span { color: var(--muted); font-weight: 400; }
@@ -250,25 +235,9 @@
   </style>
 </head>
 <body>
-
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">KorSkills<span> / Drill</span></div>
-    <p class="login-subtitle">Clinical micro-skills training</p>
-    <label class="login-label" for="login-id-input">Your Trainee ID</label>
-    <input id="login-id-input" class="login-input" type="text" placeholder="Enter your ID" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <div class="login-error" id="login-error"></div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Enter</button>
-  </div>
-</div>
-
-<div id="app-wrap" style="display:none;width:100%;flex-direction:column;align-items:center;">
 <header>
   <div class="logo">KorSkills <span>/ Drill</span></div>
-  <div style="display:flex;align-items:center;gap:0.8rem;">
-    <div id="header-progress" style="font-size:0.8rem;color:var(--muted);"></div>
-    <div id="user-badge" onclick="logOut()" title="Click to log out"></div>
-  </div>
+  <div id="header-progress" style="font-size:0.8rem;color:var(--muted);"></div>
 </header>
 
 <div id="config-panel">
@@ -279,7 +248,7 @@
   <div id="config-fields">
     <h2>Session Setup</h2>
     <div class="fields-row">
-      <div style="display:none;"><label for="trainee-id">Trainee ID</label><input id="trainee-id" type="text" value="TRN-1" placeholder="TRN-1"/></div>
+      <div><label for="trainee-id">Trainee ID</label><input id="trainee-id" type="text" value="TRN-1" placeholder="TRN-1"/></div>
       <div><label for="skill-name">Skill</label><select id="skill-name" onchange="onSkillChange()"><option value="Empathic Reflection">EFT &middot; Empathic Reflection</option><option value="Emotional Validation">EFT &middot; Emotional Validation</option></select></div>
       <div><label for="level">Level</label><select id="level" onchange="onLevelChange()"><option value="1">Level 1 &mdash; Recognition</option><option value="2">Level 2 &mdash; Comparative</option><option value="3">Level 3 &mdash; Labelling</option><option value="3b">Level 3b &mdash; Repair</option><option value="4">Level 4 &mdash; Reflecting</option></select></div>
     </div>
@@ -365,7 +334,7 @@
       <span class="tag" id="tag-diff" style="display:none;"></span>
     </div>
     <div id="stimulus-context" class="stimulus-context" style="display:none;"></div>
-    <div class="stimulus-label" id="stimulus-label">Client Fragment</div>
+    <div class="stimulus-label">Client Fragment</div>
     <div class="stimulus-text" id="stimulus-text"></div>
     <div id="l1-input">
       <div class="question-text">What is the primary emotion being expressed?</div>
@@ -598,7 +567,7 @@ function updateProg() {
 }
 
 function startDrill() {
-  S.traineeId = LOGGED_IN_TRAINEE || document.getElementById('trainee-id').value.trim() || 'TRN-1';
+  S.traineeId = document.getElementById('trainee-id').value.trim() || 'TRN-1';
   S.skillName = document.getElementById('skill-name').value;
   var rawLevel = document.getElementById('level').value;
   S.level = rawLevel === '3b' ? '3b' : parseInt(rawLevel);
@@ -645,16 +614,8 @@ function fetchStimuli() {
     S.gateThreshold = d.gate_threshold || '8/10';
     S.pack = d.pack || null;
     if (!d.stimuli || !d.stimuli.length) throw new Error('No stimuli returned.');
-    // For L3b, only use stimuli with activity_type containing Repair
-    var baseStimuli = d.stimuli;
-    if (S.level === '3b') {
-      baseStimuli = d.stimuli.filter(function(s) {
-        return Array.isArray(s.activity_type) ? s.activity_type.indexOf('Repair') !== -1 : s.activity_type === 'Repair';
-      });
-      if (!baseStimuli.length) baseStimuli = d.stimuli; // fallback
-    }
     // Apply difficulty filter
-    var filtered = applyDiffFilter(baseStimuli);
+    var filtered = applyDiffFilter(d.stimuli);
     if (!filtered.length) {
       filtered = d.stimuli; // fallback to all if filter yields nothing
       setDiff('all');
@@ -706,37 +667,26 @@ function renderStim(s) {
   if (ctx) { ctxEl.textContent = ctx; ctxEl.style.display = 'block'; }
   else { ctxEl.style.display = 'none'; }
 
-  var stimTextEl = document.getElementById('stimulus-text');
+  document.getElementById('stimulus-text').textContent = s.stimulus_text || '(no text)';
 
-  // Update stimulus label
-  var stimLabel = document.getElementById('stimulus-label');
-  if (stimLabel) stimLabel.textContent = S.level === '3b' ? 'Client' : 'Client Fragment';
-
-  // Repair drill -- correct order: Client fragment -> Therapist miss -> Client disaffiliation -> response box
+  // Repair drill -- show miss and disaffiliation elements
   var repairMissEl = document.getElementById('repair-miss-block');
   if (S.level === '3b' && s.therapist_miss_text) {
-    // Show stimulus_text as the client fragment (labelled)
-    stimTextEl.textContent = s.stimulus_text || '(no text)';
-    stimTextEl.style.display = 'block';
     if (!repairMissEl) {
+      var stimCard = document.getElementById('stimulus-text');
       var missBlock = document.createElement('div');
       missBlock.id = 'repair-miss-block';
       missBlock.innerHTML = '<div class="repair-section-label">Therapist response (the miss)</div>'
         + '<div class="therapist-miss-text" id="therapist-miss-text"></div>'
         + '<div class="repair-section-label">Client</div>'
         + '<div class="client-disaffiliation-text" id="client-disaffiliation-text"></div>';
-      stimTextEl.parentNode.insertBefore(missBlock, stimTextEl.nextSibling);
+      stimCard.parentNode.insertBefore(missBlock, stimCard.nextSibling);
     }
     document.getElementById('therapist-miss-text').textContent = s.therapist_miss_text;
     document.getElementById('client-disaffiliation-text').textContent = s.client_disaffiliation_text || '';
     document.getElementById('repair-miss-block').style.display = 'block';
-    // Relabel the stimulus context label to "Client"
-    var ctxEl = document.getElementById('stimulus-context');
-    if (ctxEl && ctxEl.style.display !== 'none') ctxEl.dataset.repair = '1';
-  } else {
-    stimTextEl.textContent = s.stimulus_text || '(no text)';
-    stimTextEl.style.display = 'block';
-    if (repairMissEl) repairMissEl.style.display = 'none';
+  } else if (repairMissEl) {
+    repairMissEl.style.display = 'none';
   }
 
   if (S.level === 1) {
@@ -1049,38 +999,8 @@ function loadPacks(skillName) {
     })
     .catch(function(e) { console.warn('loadPacks failed:', e.message); });
 }
-// Levels available per skill -- add '3b' to ER once Repair stimuli are written
-var SKILL_LEVELS = {
-  'Empathic Reflection': [
-    { value: '1',  label: 'Level 1 — Recognition' },
-    { value: '2',  label: 'Level 2 — Comparative' },
-    { value: '3',  label: 'Level 3 — Labelling' },
-    { value: '4',  label: 'Level 4 — Reflecting' }
-  ],
-  'Emotional Validation': [
-    { value: '1',  label: 'Level 1 — Recognition' },
-    { value: '2',  label: 'Level 2 — Comparative' },
-    { value: '3',  label: 'Level 3 — Labelling' },
-    { value: '3b', label: 'Level 3b — Repair' },
-    { value: '4',  label: 'Level 4 — Reflecting' }
-  ]
-};
-
-function updateLevelDropdown(skill) {
-  var sel = document.getElementById('level');
-  var current = sel.value;
-  var levels = SKILL_LEVELS[skill] || SKILL_LEVELS['Empathic Reflection'];
-  sel.innerHTML = levels.map(function(l) {
-    return '<option value="' + l.value + '"' + (l.value === current ? ' selected' : '') + '>' + l.label + '</option>';
-  }).join('');
-  // If current value no longer exists in new options, default to 1
-  var valid = levels.some(function(l) { return l.value === current; });
-  if (!valid) sel.value = '1';
-}
-
 function onSkillChange() {
   var skill = document.getElementById('skill-name').value;
-  updateLevelDropdown(skill);
   loadPacks(skill);
   updateLevelDescription();
 }
@@ -1340,7 +1260,7 @@ function sendTurn() {
 }
 
 function endSimEarly() {
-  if (SIM.ended) return;
+  if (SIM.ended || SIM.sending) return;
   endSim('manual');
 }
 
@@ -1356,7 +1276,8 @@ function endSim(reason) {
     appendChatBubble('system', 'Session ended.');
   }
   document.getElementById('header-progress').textContent = 'L3 · Evaluating…';
-  requestEval();
+  var evalDelay = reason === 'manual' ? 500 : 0;
+  setTimeout(requestEval, evalDelay);
 }
 
 // ── Evaluation ────────────────────────────────────────────────────────────────
@@ -1655,86 +1576,5 @@ function escHtml(s) {
   </div>
   <div class="summary-card hidden" id="comp-summary-card"></div>
 </div>
-
-</div><!-- end #app-wrap -->
-
-<script>
-var VALIDATE_URL = 'https://therapygym.app.n8n.cloud/webhook/validate-trainee';
-var LOGGED_IN_TRAINEE = null;
-var LOGGED_IN_NAME = null;
-
-function doLogin() {
-  var input = document.getElementById('login-id-input');
-  var btn = document.getElementById('login-btn');
-  var errEl = document.getElementById('login-error');
-  var val = input.value.trim();
-  if (!val) { errEl.textContent = 'Please enter your Trainee ID.'; return; }
-  btn.disabled = true;
-  btn.textContent = 'Checking...';
-  errEl.textContent = '';
-  fetch(VALIDATE_URL + '?trainee_id=' + encodeURIComponent(val))
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.valid) {
-        LOGGED_IN_TRAINEE = val;
-        LOGGED_IN_NAME = data.name || val;
-        sessionStorage.setItem('ks_trainee_id', val);
-        sessionStorage.setItem('ks_trainee_name', LOGGED_IN_NAME);
-        showApp();
-      } else {
-        errEl.textContent = 'ID not recognised. Please check with your trainer.';
-        btn.disabled = false;
-        btn.textContent = 'Enter';
-        input.focus();
-      }
-    })
-    .catch(function() {
-      errEl.textContent = 'Could not connect. Please try again.';
-      btn.disabled = false;
-      btn.textContent = 'Enter';
-    });
-}
-
-function showApp() {
-  document.getElementById('login-screen').classList.add('hidden');
-  var app = document.getElementById('app-wrap');
-  app.style.display = 'flex';
-  S.traineeId = LOGGED_IN_TRAINEE;
-  var idField = document.getElementById('trainee-id');
-  if (idField) idField.value = LOGGED_IN_TRAINEE;
-  var badge = document.getElementById('user-badge');
-  if (badge) badge.textContent = LOGGED_IN_NAME + ' \u00b7 log out';
-  var initSkill = document.getElementById('skill-name').value || 'Empathic Reflection';
-  if (typeof updateLevelDropdown === 'function') updateLevelDropdown(initSkill);
-  if (typeof loadPacks === 'function') loadPacks();
-  if (typeof updateLevelDescription === 'function') updateLevelDescription();
-}
-
-function logOut() {
-  if (!confirm('Log out?')) return;
-  sessionStorage.removeItem('ks_trainee_id');
-  sessionStorage.removeItem('ks_trainee_name');
-  LOGGED_IN_TRAINEE = null;
-  LOGGED_IN_NAME = null;
-  document.getElementById('app-wrap').style.display = 'none';
-  var ls = document.getElementById('login-screen');
-  ls.classList.remove('hidden');
-  document.getElementById('login-id-input').value = '';
-  document.getElementById('login-error').textContent = '';
-  document.getElementById('login-btn').disabled = false;
-  document.getElementById('login-btn').textContent = 'Enter';
-}
-
-(function() {
-  var savedId = sessionStorage.getItem('ks_trainee_id');
-  var savedName = sessionStorage.getItem('ks_trainee_name');
-  if (savedId) {
-    LOGGED_IN_TRAINEE = savedId;
-    LOGGED_IN_NAME = savedName || savedId;
-    document.addEventListener('DOMContentLoaded', function() { showApp(); });
-  }
-})();
-</script>
-
 </body>
 </html>
